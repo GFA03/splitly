@@ -18,12 +18,126 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.appTitle),
-        elevation: 4.0,
-        backgroundColor: Theme.of(context).colorScheme.surface,
+      body: Column(
+        children: [
+          const SizedBox(
+            height: 150.0,
+          ),
+          const Text(
+            'Hello {name}',
+            style: TextStyle(
+              fontSize: 18.0,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(
+            height: 100.0,
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              Column(
+                children: [
+                  const CircleAvatar(
+                    radius: 30,
+                    // backgroundColor: Colors.grey,
+                    backgroundImage: AssetImage('assets/profile_picture1.jpg'),
+                  ),
+                  const Text('You'),
+                  TextButton(
+                    onPressed: () {},
+                    child: const Text(
+                      'Change your picture',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              // SizedBox(width: 15.0,),
+              const Text(
+                'Balance: {balance}',
+                style: TextStyle(
+                  fontSize: 16.0,
+                  color: Colors.red,
+                ),
+              ),
+              // SizedBox(width: 15.0,),
+              Column(
+                children: [
+                  const CircleAvatar(
+                    radius: 30,
+                    // backgroundColor: Colors.grey,
+                    backgroundImage: AssetImage('assets/profile_picture2.jpg'),
+                  ),
+                  const Text('Alex'),
+                  TextButton(
+                    onPressed: () {},
+                    child: const Text(
+                      'Change their picture',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 20.0),
+          Text(
+            'History - last purchase or if none -> No purchases',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey[600],
+            ),
+          ),
+          TextButton(onPressed: () {}, child: const Text('See all history')),
+          const Spacer(),
+          ElevatedButton(
+            onPressed: () {
+              // Navigator.push(
+              //   context,
+              //   MaterialPageRoute(builder: (context) => const TrackExpense()),
+              // );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.purple,
+              textStyle: const TextStyle(fontSize: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 75, vertical: 20),
+            ),
+            child: const Text(
+              'Track expense',
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.white,
+              ),
+            ),
+          ),
+          const SizedBox(
+            height: 100,
+          ),
+        ],
       ),
-      body: const Text('Main page!'),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.people),
+            label: 'Friends',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.history),
+            label: 'History',
+          ),
+        ],
+      ),
     );
   }
 }

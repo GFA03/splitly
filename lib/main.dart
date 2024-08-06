@@ -17,9 +17,7 @@ class _MyAppState extends State<MyApp> {
 
   void changeThemeMode(bool useLightMode) {
     setState(() {
-      themeMode = useLightMode
-          ? ThemeMode.light
-          : ThemeMode.dark;
+      themeMode = useLightMode ? ThemeMode.light : ThemeMode.dark;
     });
   }
 
@@ -28,19 +26,18 @@ class _MyAppState extends State<MyApp> {
     const appTitle = 'Splitly';
 
     return MaterialApp(
-      title: appTitle,
-      theme: ThemeData(
-        useMaterial3: true,
-        brightness: Brightness.light,
-      ),
-      darkTheme: ThemeData(
-        useMaterial3: true,
-        brightness: Brightness.dark,
-      ),
-      home: Home(
+        title: appTitle,
+        theme: ThemeData(
+          useMaterial3: true,
+          brightness: Brightness.light,
+        ),
+        darkTheme: ThemeData(
+          useMaterial3: true,
+          brightness: Brightness.dark,
+        ),
+        home: Home(
           appTitle: appTitle,
           changeTheme: changeThemeMode,
-      )
-    );
+        ));
   }
 }
