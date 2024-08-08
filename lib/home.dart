@@ -36,7 +36,7 @@ class _HomeState extends State<Home> {
           const SizedBox(
             height: 100.0,
           ),
-          BalanceCard(balance: 15, you: friends[0], friend: friends[1]),
+          BalanceCard(friend: friends[2]),
           const SizedBox(height: 20.0),
           Text(
             'History - last purchase or if none -> No purchases',
