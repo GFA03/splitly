@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:splitly/models/friend_profile.dart';
-import 'package:splitly/components/profile_card.dart';
 import 'package:splitly/pages/track_expense_page.dart';
+import 'package:splitly/components/balance_card.dart';
 
 class Home extends StatefulWidget {
   const Home({
@@ -36,22 +36,7 @@ class _HomeState extends State<Home> {
           const SizedBox(
             height: 100.0,
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              ProfileCard(profile: friends[0]),
-              // SizedBox(width: 15.0,),
-              const Text(
-                'Balance: {balance}',
-                style: TextStyle(
-                  fontSize: 16.0,
-                  color: Colors.red,
-                ),
-              ),
-              // SizedBox(width: 15.0,),
-              ProfileCard(profile: friends[1]),
-            ],
-          ),
+          BalanceCard(balance: 15, you: friends[0], friend: friends[1]),
           const SizedBox(height: 20.0),
           Text(
             'History - last purchase or if none -> No purchases',
