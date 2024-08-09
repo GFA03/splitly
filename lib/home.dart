@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:splitly/models/friend_profile.dart';
+import 'package:splitly/pages/history_page.dart';
 import 'package:splitly/pages/track_expense_page.dart';
 import 'package:splitly/components/balance_card.dart';
 
@@ -48,7 +49,12 @@ class _HomeState extends State<Home> {
               color: Colors.grey[600],
             ),
           ),
-          TextButton(onPressed: () {}, child: const Text('See all history')),
+          TextButton(onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => HistoryPage(friend: friends[1])),
+            );
+          }, child: const Text('See all history')),
           const Spacer(),
           ElevatedButton(
             onPressed: () async {
