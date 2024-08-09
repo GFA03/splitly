@@ -36,10 +36,10 @@ class _HomeState extends State<Home> {
           const SizedBox(
             height: 100.0,
           ),
-          BalanceCard(friend: friends[2]),
+          BalanceCard(friend: friends[1]),
           const SizedBox(height: 20.0),
           Text(
-            'History - last purchase or if none -> No purchases',
+            'Last expense: ${friends[1].expenses?.last.expenseName} ${friends[1].expenses?.last.cost}\$ (paid by ${friends[1].expenses?.last.payer})',
             style: TextStyle(
               fontSize: 16,
               color: Colors.grey[600],
@@ -48,11 +48,17 @@ class _HomeState extends State<Home> {
           TextButton(onPressed: () {}, child: const Text('See all history')),
           const Spacer(),
           ElevatedButton(
-            onPressed: () {
-              Navigator.push(
+            onPressed: () async {
+              final newExpense = await Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const TrackExpense()),
+                MaterialPageRoute(builder: (context) => TrackExpense(friend: friends[1])),
               );
+
+              if (newExpense != null) {
+                setState(() {
+                  friends[1].expenses?.add(newExpense);
+                });
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.purple,

@@ -22,10 +22,10 @@ class BalanceCard extends StatelessWidget {
             // SizedBox(width: 15.0,),
             // TODO: add currency option (and you should call an API to convert the selected currency to the settings selected currency
             Text(
-              'Balance: ${friend.balance}',
+              'Balance: ${friend.calculateBalance()}\$',
               style: TextStyle(
                 fontSize: 16.0,
-                color: friend.balance > 0 ? Colors.green : Colors.red,
+                color: friend.calculateBalance() > 0 ? Colors.green : Colors.red,
               ),
             ),
             // SizedBox(width: 15.0,),

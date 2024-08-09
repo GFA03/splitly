@@ -1,16 +1,25 @@
+import 'package:splitly/models/expense.dart';
+
 class FriendProfile {
-  FriendProfile(this.name, this.imageUrl, this.balance);
+  FriendProfile(this.name, this.imageUrl);
 
   String name;
   String imageUrl;
-  double balance;
+  List<Expense>? expenses = expensesTest;
+
+  double calculateBalance() {
+    if (expenses == null || expenses!.isEmpty) {
+      return 0;
+    }
+    return expenses!.fold<double>(0, (previousValue, element) => previousValue + element.cost);
+  }
 }
 
 List<FriendProfile> friends = [
-  FriendProfile('You', 'profile_pics/profile_picture1.jpg', 20.0),
-  FriendProfile('Alex Gavrila', 'profile_pics/profile_picture2.jpg', -15.0),
-  FriendProfile('James Rodriguez', 'assets/profile_pics/profile_picture3.jpg', -34),
-  FriendProfile('Layla Ponta', 'assets/profile_pics/profile_picture4.jpg', 400),
-  FriendProfile('Crezulo Davinci', 'assets/profile_pics/profile_picture5.jpg', 1000000),
-  FriendProfile('John Doe', 'assets/profile_pics/profile_picture6.jpg', 43243),
+  FriendProfile('You', 'profile_pics/profile_picture1.jpg'),
+  FriendProfile('Alex Gavrila', 'profile_pics/profile_picture2.jpg'),
+  FriendProfile('James Rodriguez', 'assets/profile_pics/profile_picture3.jpg'),
+  FriendProfile('Layla Ponta', 'assets/profile_pics/profile_picture4.jpg'),
+  FriendProfile('Crezulo Davinci', 'assets/profile_pics/profile_picture5.jpg'),
+  FriendProfile('John Doe', 'assets/profile_pics/profile_picture6.jpg'),
 ];
