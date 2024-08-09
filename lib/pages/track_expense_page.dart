@@ -111,7 +111,7 @@ class _TrackExpenseState extends State<TrackExpense> {
             const SizedBox(
               height: 50,
             ),
-            TextFormField(
+            (buttonSelected == 0 || buttonSelected == 1) ? TextFormField(
               validator: (inputValue) {
                 if (buttonSelected == 2) {
                   return null;
@@ -132,11 +132,11 @@ class _TrackExpenseState extends State<TrackExpense> {
                 }
                 expense.cost += double.parse(value);
               },
-            ),
-            const SizedBox(
+            ) : const SizedBox(height: 0,),
+            (buttonSelected == 1) ? const SizedBox(
               height: 50,
-            ),
-            TextFormField(
+            ) : const SizedBox(height: 0,),
+            (buttonSelected == 1 || buttonSelected == 2) ? TextFormField(
               validator: (inputValue) {
                 if (buttonSelected == 0) {
                   return null;
@@ -157,7 +157,7 @@ class _TrackExpenseState extends State<TrackExpense> {
                 }
                 expense.cost -= double.parse(value);
               },
-            ),
+            ) : const SizedBox(height: 0,),
             const SizedBox(
               height: 50,
             ),
