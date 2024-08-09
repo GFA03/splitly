@@ -6,11 +6,10 @@ class Expense {
     this.description,
   });
 
-  //TODO: add Date variable so you can know when it was that expense
-
   String payer;
   String expenseName;
   double cost;
+  DateTime date = DateTime.now();
   String? description;
 }
 

@@ -8,16 +8,19 @@ class Home extends StatefulWidget {
     super.key,
     required this.changeTheme,
     required this.appTitle,
+    required this.name,
   });
 
   final void Function(bool useLightMode) changeTheme;
   final String appTitle;
+  final String name;
 
   @override
   State<Home> createState() => _HomeState();
 }
 
 class _HomeState extends State<Home> {
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,9 +29,9 @@ class _HomeState extends State<Home> {
           const SizedBox(
             height: 150.0,
           ),
-          const Text(
-            'Hello {name}',
-            style: TextStyle(
+          Text(
+            'Hello ${widget.name}',
+            style: const TextStyle(
               fontSize: 18.0,
               fontWeight: FontWeight.bold,
             ),

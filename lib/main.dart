@@ -24,6 +24,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     const appTitle = 'Splitly';
+    const String name = 'John Doe';
 
     return MaterialApp(
         title: appTitle,
@@ -38,6 +39,7 @@ class _MyAppState extends State<MyApp> {
         home: Home(
           appTitle: appTitle,
           changeTheme: changeThemeMode,
+          name: name,
         ));
   }
 }
