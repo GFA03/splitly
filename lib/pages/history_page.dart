@@ -13,14 +13,15 @@ class HistoryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Splitly'),
-      ),
+        appBar: AppBar(
+          title: const Text('Splitly'),
+        ),
         body: ListView.builder(
-      itemCount: friend.expenses?.length,
-        itemBuilder: (context, index) {
-          return ExpenseCard(expense: friend.expenses![index]);
-        },
-    ));
+          itemCount: friend.expenses?.length,
+          itemBuilder: (context, index) {
+            int reversedIndex = (friend.expenses?.length ?? 0) - 1 - index;
+            return ExpenseCard(expense: friend.expenses![reversedIndex]);
+          },
+        ));
   }
 }

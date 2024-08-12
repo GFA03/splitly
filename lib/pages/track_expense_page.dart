@@ -130,7 +130,7 @@ class _TrackExpenseState extends State<TrackExpense> {
                 if (value == null || value == "") {
                   return;
                 }
-                expense.cost += double.parse(value);
+                expense.paidByUser = double.parse(value);
               },
             ) : const SizedBox(height: 0,),
             (buttonSelected == 1) ? const SizedBox(
@@ -155,7 +155,7 @@ class _TrackExpenseState extends State<TrackExpense> {
                 if (value == null || value == "") {
                   return;
                 }
-                expense.cost -= double.parse(value);
+                expense.paidByFriend = double.parse(value);
               },
             ) : const SizedBox(height: 0,),
             const SizedBox(
@@ -188,13 +188,6 @@ class _TrackExpenseState extends State<TrackExpense> {
                         ),
                       );
                       _formKey.currentState!.save();
-                      if (buttonSelected == 0) {
-                        expense.payer = 'You';
-                      } else if (buttonSelected == 1) {
-                        expense.payer = 'Both';
-                      } else {
-                        expense.payer = 'Them';
-                      }
                       Navigator.pop(context, expense);
                     }
                   },

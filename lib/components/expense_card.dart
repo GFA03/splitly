@@ -32,7 +32,7 @@ class ExpenseCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 10.0,),
                     Text(
-                      'Cost: ${expense.cost}\$',
+                      'Cost: ${expense.totalCost}\$',
                       style: const TextStyle(
                         fontSize: 16.0,
                       ),
@@ -85,7 +85,7 @@ class ExpenseCard extends StatelessWidget {
                 Column(children: [
                   Center(
                     child: Text(
-                      '${expense.cost}\$',
+                      '${expense.totalCost}\$',
                     ),
                   ),
                   Text(

@@ -43,7 +43,7 @@ class _HomeState extends State<Home> {
           BalanceCard(friend: friends[1]),
           const SizedBox(height: 20.0),
           Text(
-            'Last expense: ${friends[1].expenses?.last.name} ${friends[1].expenses?.last.cost}\$ (paid by ${friends[1].expenses?.last.payer})',
+            'Last expense: ${friends[1].expenses?.last.name} ${friends[1].expenses?.last.totalCost}\$ (paid by ${friends[1].expenses?.last.payer})',
             style: TextStyle(
               fontSize: 16,
               color: Colors.grey[600],
