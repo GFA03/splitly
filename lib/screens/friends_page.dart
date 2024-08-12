@@ -12,15 +12,60 @@ class FriendsPage extends StatefulWidget {
 }
 
 class _FriendsPageState extends State<FriendsPage> {
+  late List<FriendProfile> persons;
+
+  @override
+  void initState() {
+    super.initState();
+    persons = friends;
+  }
+
+  void deleteFriend(int index) {
+    FriendProfile deletedFriend = persons[index];
+    setState(() {
+      persons.removeAt(index);
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${deletedFriend.name} deleted'),
+        action: SnackBarAction(
+          label: 'Undo',
+          onPressed: () {
+            setState(() {
+              persons.insert(index, deletedFriend);
+            });
+          },
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: ListView.builder(
-        itemCount: friends.length,
+        itemCount: persons.length,
         itemBuilder: (context, index) {
-          return GestureDetector(
-            onTap: () => widget.onFriendSelected(friends[index]),
-            child: FriendCard(friend: friends[index]),
+          return Dismissible(
+            key: Key(persons[index].name),
+            direction: DismissDirection.endToStart,
+            onDismissed: (direction) {
+              deleteFriend(index);
+            },
+            background: Container(
+              color: Colors.red,
+              alignment: Alignment.centerRight,
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: const Icon(
+                Icons.delete,
+                color: Colors.white,
+              ),
+            ),
+            child: GestureDetector(
+              onTap: () => widget.onFriendSelected(persons[index]),
+              child: FriendCard(friend: persons[index]),
+            ),
           );
         },
       ),
@@ -37,7 +82,7 @@ class _FriendsPageState extends State<FriendsPage> {
                     ),
                     onSubmitted: (value) {
                       if (value.isNotEmpty) {
-                        friends.add(FriendProfile(
+                        persons.add(FriendProfile(
                             value, 'assets/profile_pics/profile_picture1.jpg'));
                         Navigator.of(context).pop();
                         setState(() {

@@ -42,8 +42,6 @@ class _HistoryPageState extends State<HistoryPage> {
           label: 'Undo',
           onPressed: () {
             setState(() {
-              // Re-add the expense (for simplicity, assuming the last deleted expense)
-              // In a more complex app, you might store the deleted item and its index
               widget.friend.expenses.insert(index, deletedExpense);
               widget.onExpenseDeleted();
             });
