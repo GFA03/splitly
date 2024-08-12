@@ -39,7 +39,7 @@ class _BalancePageState extends State<BalancePage> {
         BalanceCard(friend: widget.friend!),
         const SizedBox(height: 20.0),
         Text(
-          'Last expense: ${widget.friend!.expenses?.last.name} ${widget.friend!.expenses?.last.totalCost}\$ (paid by ${widget.friend!.expenses?.last.payer})',
+          'Last expense: ${widget.friend!.expenses.last.name} ${widget.friend!.expenses.last.totalCost}\$ (paid by ${widget.friend!.expenses.last.payer})',
           style: TextStyle(
             fontSize: 16,
             color: Colors.grey[600],
@@ -75,7 +75,7 @@ class _BalancePageState extends State<BalancePage> {
 
             if (newExpense != null) {
               setState(() {
-                widget.friend!.expenses?.add(newExpense);
+                widget.friend!.expenses.add(newExpense);
               });
             }
           },

@@ -5,13 +5,13 @@ class FriendProfile {
 
   String name;
   String imageUrl;
-  List<Expense>? expenses = expensesTest;
+  List<Expense> expenses = expensesTest;
 
   double calculateBalance() {
-    if (expenses == null || expenses!.isEmpty) {
+    if (expenses.isEmpty) {
       return 0;
     }
-    return expenses!.fold<double>(0, (previousValue, element) => previousValue + (element.paidByUser - element.paidByFriend));
+    return expenses.fold<double>(0, (previousValue, element) => previousValue + (element.paidByUser - element.paidByFriend));
   }
 }
 
