@@ -12,7 +12,7 @@ class BalancePage extends StatefulWidget {
   });
 
   final String name;
-  final FriendProfile friend;
+  final FriendProfile? friend;
 
   @override
   State<BalancePage> createState() => _BalancePageState();
@@ -21,7 +21,7 @@ class BalancePage extends StatefulWidget {
 class _BalancePageState extends State<BalancePage> {
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return widget.friend == null ? const Center(child: Text('Please select a friend'),) : Column(
       children: [
         const SizedBox(
           height: 150.0,
@@ -36,10 +36,10 @@ class _BalancePageState extends State<BalancePage> {
         const SizedBox(
           height: 100.0,
         ),
-        BalanceCard(friend: widget.friend),
+        BalanceCard(friend: widget.friend!),
         const SizedBox(height: 20.0),
         Text(
-          'Last expense: ${widget.friend.expenses?.last.name} ${widget.friend.expenses?.last.totalCost}\$ (paid by ${widget.friend.expenses?.last.payer})',
+          'Last expense: ${widget.friend!.expenses?.last.name} ${widget.friend!.expenses?.last.totalCost}\$ (paid by ${widget.friend!.expenses?.last.payer})',
           style: TextStyle(
             fontSize: 16,
             color: Colors.grey[600],
@@ -51,7 +51,7 @@ class _BalancePageState extends State<BalancePage> {
                 context,
                 MaterialPageRoute(
                   builder: (context) => HistoryPage(
-                    friend: widget.friend,
+                    friend: widget.friend!,
                     onExpenseDeleted: () {
                       setState(() {});
                     },
@@ -70,12 +70,12 @@ class _BalancePageState extends State<BalancePage> {
             final newExpense = await Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => TrackExpense(friend: widget.friend)),
+                  builder: (context) => TrackExpense(friend: widget.friend!)),
             );
 
             if (newExpense != null) {
               setState(() {
-                widget.friend.expenses?.add(newExpense);
+                widget.friend!.expenses?.add(newExpense);
               });
             }
           },

@@ -21,7 +21,8 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int tab = 0;
-  int selectedFriendIndex = 1;
+  FriendProfile? selectedFriend;
+
   List<NavigationDestination> appBarDestinations = const [
     NavigationDestination(
       icon: Icon(Icons.home_outlined),
@@ -40,11 +41,18 @@ class _HomeState extends State<Home> {
     ),
   ];
 
+  void _selectFriend(FriendProfile friend) {
+    setState(() {
+      selectedFriend = friend;
+      tab = 0;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final pages = [
-      BalancePage(name: widget.name, friend: friends[selectedFriendIndex]),
-      const FriendsPage(),
+      BalancePage(name: widget.name, friend: selectedFriend),
+      FriendsPage(onFriendSelected: _selectFriend),
       const Center(
         child: Text('Settings'),
       )

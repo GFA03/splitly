@@ -2,21 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:splitly/components/friend_card.dart';
 import 'package:splitly/models/friend_profile.dart';
 
-class FriendsPage extends StatefulWidget {
-  const FriendsPage({super.key});
+class FriendsPage extends StatelessWidget {
+  const FriendsPage({super.key, required this.onFriendSelected});
 
-  @override
-  State<FriendsPage> createState() => _FriendsPageState();
-}
+  final void Function(FriendProfile) onFriendSelected;
 
-class _FriendsPageState extends State<FriendsPage> {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-        itemCount: friends.length,
-        itemBuilder: (context, index) {
-          return FriendCard(friend: friends[index]);
-        },
+      itemCount: friends.length,
+      itemBuilder: (context, index) {
+        return GestureDetector(
+          onTap: () => onFriendSelected(friends[index]),
+          child: FriendCard(friend: friends[index]),
+        );
+      },
     );
   }
 }
