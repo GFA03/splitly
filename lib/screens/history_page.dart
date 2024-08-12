@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:splitly/components/expense_card.dart';
 import 'package:splitly/models/expense.dart';
 import 'package:splitly/models/friend_profile.dart';
+import 'package:splitly/screens/track_expense_page.dart';
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({
@@ -52,6 +53,84 @@ class _HistoryPageState extends State<HistoryPage> {
     );
   }
 
+  void _showExpenseDetails(Expense expense) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    expense.name,
+                    style: const TextStyle(
+                      fontSize: 20.0,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    onPressed: () async {
+                      Navigator.pop(context);
+                      final editedExpense = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => TrackExpense(
+                            friend: widget.friend,
+                            expense: expense,
+                          ),
+                        ),
+                      );
+
+                      if (editedExpense != null) {
+                        setState(() {
+                          final index = widget.friend.expenses!.indexOf(expense);
+                          widget.friend.expenses![index] = editedExpense;
+                        });
+                      }
+                    },
+                    icon: const Icon(
+                      Icons.edit,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10.0),
+              Text(
+                'Cost: ${expense.totalCost}\$',
+                style: const TextStyle(
+                  fontSize: 16.0,
+                ),
+              ),
+              const SizedBox(height: 10.0),
+              Text(
+                'Paid by: ${expense.payer}',
+                style: const TextStyle(
+                  fontSize: 16.0,
+                ),
+              ),
+              if (expense.description != null) ...[
+                const SizedBox(height: 10.0),
+                Text(
+                  'Description: ${expense.description}',
+                  style: const TextStyle(
+                    fontSize: 14.0,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -77,12 +156,11 @@ class _HistoryPageState extends State<HistoryPage> {
                 color: Colors.white,
               ),
             ),
-            child: ExpenseCard(
-              expense: expenses[reversedIndex],
-              friend: widget.friend,
-              onDelete: () {
-                deleteExpense(reversedIndex);
-              },
+            child: GestureDetector(
+              onTap: () => _showExpenseDetails(expenses[reversedIndex]),
+              child: ExpenseCard(
+                expense: expenses[reversedIndex],
+              ),
             ),
           );
         },
