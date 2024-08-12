@@ -24,7 +24,7 @@ class _HistoryPageState extends State<HistoryPage> {
   @override
   void initState() {
     super.initState();
-    expenses = widget.friend.expenses ?? [];
+    expenses = widget.friend.expenses;
   }
 
   void deleteExpense(int index) {
@@ -44,7 +44,7 @@ class _HistoryPageState extends State<HistoryPage> {
             setState(() {
               // Re-add the expense (for simplicity, assuming the last deleted expense)
               // In a more complex app, you might store the deleted item and its index
-              widget.friend.expenses?.insert(index, deletedExpense);
+              widget.friend.expenses.insert(index, deletedExpense);
               widget.onExpenseDeleted();
             });
           },
@@ -88,8 +88,8 @@ class _HistoryPageState extends State<HistoryPage> {
 
                       if (editedExpense != null) {
                         setState(() {
-                          final index = widget.friend.expenses!.indexOf(expense);
-                          widget.friend.expenses![index] = editedExpense;
+                          final index = widget.friend.expenses.indexOf(expense);
+                          widget.friend.expenses[index] = editedExpense;
                         });
                       }
                     },
