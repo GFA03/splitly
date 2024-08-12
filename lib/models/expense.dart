@@ -13,6 +13,8 @@ class Expense {
   DateTime date;         // Date of the expense
   String? description;   // Optional description of the expense
 
+  // TODO: Set words limit on description (test if you have too many words how does it show in expense history)
+
   double get totalCost => paidByUser + paidByFriend;
 
   String get payer => paidByUser != 0 && paidByFriend == 0 ? "You" : (paidByUser != 0 && paidByFriend != 0 ? "Both" : "Them");

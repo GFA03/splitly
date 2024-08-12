@@ -6,9 +6,11 @@ class TrackExpense extends StatefulWidget {
   const TrackExpense({
     super.key,
     required this.friend,
+    this.expense,
   });
 
   final FriendProfile friend;
+  final Expense? expense;
 
   @override
   State<TrackExpense> createState() => _TrackExpenseState();
@@ -20,6 +22,27 @@ class _TrackExpenseState extends State<TrackExpense> {
   final RegExp _digitRegex = RegExp("^[0-9]+\$");
   final expense = Expense();
   late var submitted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.expense != null) {
+      expense.name = widget.expense!.name;
+      expense.paidByUser = widget.expense!.paidByUser;
+      expense.paidByFriend = widget.expense!.paidByFriend;
+      expense.description = widget.expense!.description;
+      buttonSelected = determineButtonSelection();
+    }
+  }
+
+  int determineButtonSelection() {
+    if (expense.paidByUser > 0 && expense.paidByFriend > 0) {
+      return 1; // Both paid
+    } else if (expense.paidByFriend > 0) {
+      return 2; // Friend paid
+    }
+    return 0; // User paid
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,6 +63,7 @@ class _TrackExpenseState extends State<TrackExpense> {
                 labelText: 'Product name',
                 labelStyle: TextStyle(color: Colors.purple),
               ),
+              initialValue: widget.expense?.name,
               enabled: !submitted,
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -125,6 +149,7 @@ class _TrackExpenseState extends State<TrackExpense> {
                 labelText: 'How much have you paid?',
                 labelStyle: TextStyle(color: Colors.purple),
               ),
+              initialValue: widget.expense?.paidByUser.toString(),
               enabled: ((buttonSelected == 0 || buttonSelected == 1) && !submitted),
               onSaved: (value) {
                 if (value == null || value == "") {
@@ -151,6 +176,7 @@ class _TrackExpenseState extends State<TrackExpense> {
                 labelText: 'How much have they paid?',
                 labelStyle: TextStyle(color: Colors.purple),
               ),
+              initialValue: widget.expense?.paidByFriend.toString(),
               onSaved: (value) {
                 if (value == null || value == "") {
                   return;
@@ -167,6 +193,7 @@ class _TrackExpenseState extends State<TrackExpense> {
                 labelText: 'Description (optional):',
                 labelStyle: TextStyle(color: Colors.purple),
               ),
+              initialValue: widget.expense?.description,
               enabled: !submitted,
               onSaved: (value) {
                 expense.description = value;
@@ -183,12 +210,22 @@ class _TrackExpenseState extends State<TrackExpense> {
                         submitted = true;
                       });
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Processing Data'),
+                        SnackBar(
+                          content: widget.expense != null ? const Text('Expense edited successfully!') : const Text('Expense tracked!'),
                         ),
                       );
                       _formKey.currentState!.save();
-                      Navigator.pop(context, expense);
+
+                      if (widget.expense != null) {
+                        // Editing an existing expense
+                        widget.expense!.name = expense.name;
+                        widget.expense!.paidByUser = expense.paidByUser;
+                        widget.expense!.paidByFriend = expense.paidByFriend;
+                        widget.expense!.description = expense.description;
+                        Navigator.pop(context, widget.expense);
+                      } else {
+                        Navigator.pop(context, expense);
+                      }
                     }
                   },
                   style: ElevatedButton.styleFrom(

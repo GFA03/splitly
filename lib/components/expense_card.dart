@@ -1,17 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:splitly/models/expense.dart';
+import 'package:splitly/models/friend_profile.dart';
+import 'package:splitly/pages/track_expense_page.dart';
 import 'package:splitly/utils.dart';
 
-class ExpenseCard extends StatelessWidget {
+class ExpenseCard extends StatefulWidget {
   const ExpenseCard({
     super.key,
     required this.expense,
+    required this.friend,
     required this.onDelete,
   });
 
   final Expense expense;
+  final FriendProfile friend;
   final VoidCallback onDelete;
 
+  @override
+  State<ExpenseCard> createState() => _ExpenseCardState();
+}
+
+class _ExpenseCardState extends State<ExpenseCard> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -25,31 +34,62 @@ class ExpenseCard extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      expense.name,
-                      style: const TextStyle(
-                        fontSize: 20.0,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    Row(
+                      children: [
+                        Text(
+                          widget.expense.name,
+                          style: const TextStyle(
+                            fontSize: 20.0,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const Spacer(),
+                        IconButton(
+                          onPressed: () async {
+                            Navigator.pop(context);
+                            final editedExpense = await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => TrackExpense(
+                                      friend: widget.friend, expense: widget.expense),
+                                ));
+
+                            if (editedExpense != null) {
+                              setState(() {
+                                final index = widget.friend.expenses!.indexOf(widget.expense);
+                                widget.friend.expenses![index] = editedExpense;
+                              });
+                            }
+                          },
+                          icon: const Icon(
+                            Icons.edit,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 10.0,),
+                    const SizedBox(
+                      height: 10.0,
+                    ),
                     Text(
-                      'Cost: ${expense.totalCost}\$',
+                      'Cost: ${widget.expense.totalCost}\$',
                       style: const TextStyle(
                         fontSize: 16.0,
                       ),
                     ),
-                    const SizedBox(height: 10.0,),
+                    const SizedBox(
+                      height: 10.0,
+                    ),
                     Text(
-                      'Paid by: ${expense.payer}',
+                      'Paid by: ${widget.expense.payer}',
                       style: const TextStyle(
                         fontSize: 16.0,
                       ),
                     ),
-                    if (expense.description != null) ...[
+                    if (widget.expense.description != null) ...[
                       const SizedBox(height: 10.0),
                       Text(
-                        'Description: ${expense.description}',
+                        'Description: ${widget.expense.description}',
                         style: const TextStyle(
                           fontSize: 14.0,
                           color: Colors.grey,
@@ -73,9 +113,9 @@ class ExpenseCard extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(expense.name),
+                    Text(widget.expense.name),
                     Text(
-                      formatDate(expense.date),
+                      formatDate(widget.expense.date),
                       style: TextStyle(
                         color: Colors.grey[600],
                         fontSize: 12,
@@ -87,11 +127,11 @@ class ExpenseCard extends StatelessWidget {
                 Column(children: [
                   Center(
                     child: Text(
-                      '${expense.totalCost}\$',
+                      '${widget.expense.totalCost}\$',
                     ),
                   ),
                   Text(
-                    '(Paid by ${expense.payer})',
+                    '(Paid by ${widget.expense.payer})',
                     style: TextStyle(
                       color: Colors.grey[600],
                       fontSize: 10,

@@ -79,6 +79,7 @@ class _HistoryPageState extends State<HistoryPage> {
             ),
             child: ExpenseCard(
               expense: expenses[reversedIndex],
+              friend: widget.friend,
               onDelete: () {
                 deleteExpense(reversedIndex);
               },
