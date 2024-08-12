@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:splitly/models/expense.dart';
 import 'package:splitly/models/friend_profile.dart';
-import 'package:splitly/pages/track_expense_page.dart';
+import 'package:splitly/screens/track_expense_page.dart';
 import 'package:splitly/utils.dart';
 
 class ExpenseCard extends StatefulWidget {

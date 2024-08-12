@@ -60,7 +60,7 @@ class _TrackExpenseState extends State<TrackExpense> {
             ),
             TextFormField(
               decoration: const InputDecoration(
-                labelText: 'Product name',
+                labelText: 'Expense name',
                 labelStyle: TextStyle(color: Colors.purple),
               ),
               initialValue: widget.expense?.name,
@@ -128,7 +128,7 @@ class _TrackExpenseState extends State<TrackExpense> {
                       borderRadius: BorderRadius.circular(20),
                     ),
                   ),
-                  child: const Text('Alex'),
+                  child: Text(widget.friend.name),
                 ),
               ],
             ),

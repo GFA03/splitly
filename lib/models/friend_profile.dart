@@ -16,7 +16,6 @@ class FriendProfile {
 }
 
 List<FriendProfile> friends = [
-  FriendProfile('You', 'profile_pics/profile_picture1.jpg'),
   FriendProfile('Alex Gavrila', 'profile_pics/profile_picture2.jpg'),
   FriendProfile('James Rodriguez', 'assets/profile_pics/profile_picture3.jpg'),
   FriendProfile('Layla Ponta', 'assets/profile_pics/profile_picture4.jpg'),

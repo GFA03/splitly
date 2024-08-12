@@ -12,13 +12,15 @@ class BalanceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String profileImage = 'assets/profile_pics/profile_picture1.jpg';
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            ProfileCard(profile: friends[0]),
+            ProfileCard(profile: FriendProfile('You', profileImage)),
             // SizedBox(width: 15.0,),
             // TODO: add currency option (and you should call an API to convert the selected currency to the settings selected currency
             Text(
