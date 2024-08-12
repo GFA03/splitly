@@ -6,9 +6,11 @@ class ExpenseCard extends StatelessWidget {
   const ExpenseCard({
     super.key,
     required this.expense,
+    required this.onDelete,
   });
 
   final Expense expense;
+  final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {

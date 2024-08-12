@@ -21,7 +21,6 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -49,18 +48,32 @@ class _HomeState extends State<Home> {
               color: Colors.grey[600],
             ),
           ),
-          TextButton(onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => HistoryPage(friend: friends[1])),
-            );
-          }, child: const Text('See all history')),
+          TextButton(
+              onPressed: () async {
+                final updated = await Navigator.push<bool>(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => HistoryPage(
+                      friend: friends[1],
+                      onExpenseDeleted: () {
+                        setState(() {});
+                      },
+                    ),
+                  ),
+                );
+
+                if (updated == true) {
+                  setState(() {});
+                }
+              },
+              child: const Text('See all history')),
           const Spacer(),
           ElevatedButton(
             onPressed: () async {
               final newExpense = await Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => TrackExpense(friend: friends[1])),
+                MaterialPageRoute(
+                    builder: (context) => TrackExpense(friend: friends[1])),
               );
 
               if (newExpense != null) {
