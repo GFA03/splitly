@@ -21,7 +21,7 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int tab = 0;
-  FriendProfile? selectedFriend;
+  FriendProfile? selectedFriend = friends[0];
 
   List<NavigationDestination> appBarDestinations = const [
     NavigationDestination(
