@@ -13,6 +13,7 @@ class FriendsPage extends StatefulWidget {
 
 class _FriendsPageState extends State<FriendsPage> {
   late List<FriendProfile> persons;
+  String? newFriendName;
 
   @override
   void initState() {
@@ -41,6 +42,38 @@ class _FriendsPageState extends State<FriendsPage> {
     );
   }
 
+  void _editFriendName(int index, String newName) {
+    try {
+      setState(() {
+        persons[index].name = newName;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${persons[index].name} edited successfully'),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString())),
+      );
+    }
+  }
+
+  void _addFriend() {
+    if (newFriendName != null && newFriendName!.isNotEmpty) {
+      setState(() {
+        persons.add(FriendProfile(
+            newFriendName!, 'assets/profile_pics/profile_picture1.jpg'));
+      });
+      Navigator.of(context).pop();  // Close the dialog
+    } else {
+      // Optionally show a warning that the name can't be empty
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Friend\'s name cannot be empty')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -64,7 +97,10 @@ class _FriendsPageState extends State<FriendsPage> {
             ),
             child: GestureDetector(
               onTap: () => widget.onFriendSelected(persons[index]),
-              child: FriendCard(friend: persons[index]),
+              child: FriendCard(
+                friend: persons[index],
+                onEdit: (newName) => _editFriendName(index, newName),
+              ),
             ),
           );
         },
@@ -80,15 +116,8 @@ class _FriendsPageState extends State<FriendsPage> {
                     decoration: const InputDecoration(
                       hintText: 'Enter friend\'s name',
                     ),
-                    onSubmitted: (value) {
-                      if (value.isNotEmpty) {
-                        persons.add(FriendProfile(
-                            value, 'assets/profile_pics/profile_picture1.jpg'));
-                        Navigator.of(context).pop();
-                        setState(() {
-
-                        });
-                      }
+                    onChanged: (value) {
+                      newFriendName = value;
                     },
                   ),
                   actions: [
@@ -96,6 +125,10 @@ class _FriendsPageState extends State<FriendsPage> {
                       onPressed: () => Navigator.of(context).pop(),
                       child: const Text('Cancel'),
                     ),
+                    TextButton(
+                      onPressed: _addFriend,
+                      child: const Text('Save'),
+                    )
                   ],
                 );
               });

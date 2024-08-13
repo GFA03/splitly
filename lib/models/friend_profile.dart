@@ -1,11 +1,20 @@
 import 'package:splitly/models/expense.dart';
 
 class FriendProfile {
-  FriendProfile(this.name, this.imageUrl);
+  FriendProfile(this._name, this.imageUrl);
 
-  String name;
+  String _name;
   String imageUrl;
   List<Expense> expenses = expensesTest;
+
+  String get name => _name;
+
+  set name(String newName) {
+    if (newName.isEmpty) {
+      throw ArgumentError('Name cannot be empty');
+    }
+    _name = newName;
+  }
 
   double calculateBalance() {
     if (expenses.isEmpty) {
