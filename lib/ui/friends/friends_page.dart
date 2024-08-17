@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:splitly/components/friend_card.dart';
-import 'package:splitly/models/friend_profile.dart';
+import 'package:splitly/ui/friends/friend_card.dart';
+import 'package:splitly/data/models/friend_profile.dart';
 
 class FriendsPage extends StatefulWidget {
   const FriendsPage({super.key, required this.onFriendSelected});

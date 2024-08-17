@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:splitly/components/see_history_card.dart';
-import 'package:splitly/models/friend_profile.dart';
-import 'package:splitly/components/profile_card.dart';
+import 'package:splitly/ui/balance/see_history_card.dart';
+import 'package:splitly/data/models/friend_profile.dart';
+import 'package:splitly/ui/widgets/profile_card.dart';
 
 class BalanceCard extends StatefulWidget {
   const BalanceCard({

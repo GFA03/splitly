@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:splitly/components/expense_card.dart';
-import 'package:splitly/models/expense.dart';
-import 'package:splitly/models/friend_profile.dart';
-import 'package:splitly/screens/track_expense_page.dart';
+import 'package:splitly/ui/widgets/expense_card.dart';
+import 'package:splitly/data/models/expense.dart';
+import 'package:splitly/data/models/friend_profile.dart';
+import 'package:splitly/ui/balance/track_expense_page.dart';
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({

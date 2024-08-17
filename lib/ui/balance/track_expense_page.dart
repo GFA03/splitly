@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:splitly/models/expense.dart';
-import 'package:splitly/models/friend_profile.dart';
+import 'package:splitly/data/models/expense.dart';
+import 'package:splitly/data/models/friend_profile.dart';
 
 class TrackExpense extends StatefulWidget {
   const TrackExpense({

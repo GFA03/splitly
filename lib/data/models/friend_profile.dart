@@ -1,4 +1,4 @@
-import 'package:splitly/models/expense.dart';
+import 'package:splitly/data/models/expense.dart';
 
 class FriendProfile {
   FriendProfile(this._name, this.imageUrl);

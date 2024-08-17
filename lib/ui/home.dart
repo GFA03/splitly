@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:splitly/models/friend_profile.dart';
-import 'package:splitly/screens/balance_page.dart';
-import 'package:splitly/screens/friends_page.dart';
+import 'package:splitly/data/models/friend_profile.dart';
+import 'package:splitly/ui/balance/balance_page.dart';
+import 'package:splitly/ui/friends/friends_page.dart';
 
 class Home extends StatefulWidget {
   const Home({

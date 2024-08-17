@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:splitly/models/expense.dart';
+import 'package:splitly/data/models/expense.dart';
 import 'package:splitly/utils.dart';
 
 class ExpenseCard extends StatefulWidget {

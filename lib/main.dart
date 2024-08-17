@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:splitly/home.dart';
+import 'package:splitly/ui/home.dart';
 
 void main() {
   runApp(const MyApp());

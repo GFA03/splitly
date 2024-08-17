@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:splitly/models/friend_profile.dart';
+import 'package:splitly/data/models/friend_profile.dart';
 
 class FriendCard extends StatelessWidget {
   const FriendCard({

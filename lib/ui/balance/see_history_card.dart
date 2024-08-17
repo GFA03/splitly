@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:splitly/models/friend_profile.dart';
-import 'package:splitly/screens/history_page.dart';
+import 'package:splitly/data/models/friend_profile.dart';
+import 'package:splitly/ui/history/history_page.dart';
 
 class SeeHistoryCard extends StatefulWidget {
   const SeeHistoryCard({
