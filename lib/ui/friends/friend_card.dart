@@ -11,13 +11,49 @@ class FriendCard extends StatelessWidget {
   final FriendProfile friend;
   final void Function(String) onEdit;
 
-  void _showEditDialog(BuildContext context) {
-    final TextEditingController controller =
-        TextEditingController(text: friend.name);
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 0.0,
+      margin: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 16.0),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+        child: _buildFriendInfo(context),
+      ),
+    );
+  }
 
+  Row _buildFriendInfo(BuildContext context) {
+    return Row(
+      children: [
+        CircleAvatar(backgroundImage: AssetImage(friend.imageUrl), radius: 25),
+        const SizedBox(width: 15.0),
+        Text(friend.name),
+        const Spacer(),
+        _buildEditButton(context)
+      ],
+    );
+  }
+
+  IconButton _buildEditButton(BuildContext context) {
+    return IconButton(
+        onPressed: () {
+          _showEditDialog(context);
+        },
+        icon: Icon(
+          Icons.edit,
+          color: Theme.of(context).iconTheme.color,
+          size: 18,
+        ));
+  }
+
+  void _showEditDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) {
+        final TextEditingController controller =
+            TextEditingController(text: friend.name);
+
         return AlertDialog(
           title: const Text('Edit Friend Name'),
           content: TextField(
@@ -42,39 +78,6 @@ class FriendCard extends StatelessWidget {
           ],
         );
       },
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(12.0),
-      child: Card(
-        elevation: 12.0,
-        shape: const RoundedRectangleBorder(),
-        child: Row(
-          children: [
-            CircleAvatar(
-              backgroundImage: AssetImage(friend.imageUrl),
-              radius: 25,
-            ),
-            const SizedBox(
-              width: 15.0,
-            ),
-            Text(friend.name),
-            const Spacer(),
-            IconButton(
-                onPressed: () {
-                  _showEditDialog(context);
-                },
-                icon: const Icon(
-                  Icons.edit,
-                  color: Colors.white,
-                  size: 18,
-                ))
-          ],
-        ),
-      ),
     );
   }
 }
