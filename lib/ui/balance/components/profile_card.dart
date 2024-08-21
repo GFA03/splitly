@@ -16,22 +16,23 @@ class ProfileCard extends StatelessWidget {
         .apply(displayColor: Theme.of(context).colorScheme.onSurface);
 
     return Card(
+      elevation: 0.0,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          const SizedBox(height: 10,),
           CircleAvatar(
             backgroundImage: AssetImage(profile.imageUrl),
             radius: 40,
           ),
-          Text(profile.name),
+          const SizedBox(height: 10,),
+          Text(profile.name
+          ),
           TextButton(
             onPressed: () {},
-            child: const Text(
+            child: Text(
               'Change picture',
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w400,
-              ),
+              style: textTheme.apply(displayColor: Colors.purple).bodySmall,
             ),
           ),
         ],

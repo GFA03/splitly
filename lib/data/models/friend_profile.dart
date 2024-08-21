@@ -20,12 +20,15 @@ class FriendProfile {
     if (expenses.isEmpty) {
       return 0;
     }
-    return expenses.fold<double>(0, (previousValue, element) => previousValue + (element.paidByUser - element.paidByFriend));
+    return expenses.fold<double>(
+        0,
+        (previousValue, element) =>
+            previousValue + (element.paidByUser - element.paidByFriend));
   }
 }
 
 List<FriendProfile> friends = [
-  FriendProfile('Alex Gavrila', 'profile_pics/profile_picture2.jpg'),
+  FriendProfile('Alex Gavrila', 'assets/profile_pics/profile_picture2.jpg'),
   FriendProfile('James Rodriguez', 'assets/profile_pics/profile_picture3.jpg'),
   FriendProfile('Layla Ponta', 'assets/profile_pics/profile_picture4.jpg'),
   FriendProfile('Crezulo Davinci', 'assets/profile_pics/profile_picture5.jpg'),

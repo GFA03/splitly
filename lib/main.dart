@@ -28,6 +28,7 @@ class _MyAppState extends State<MyApp> {
 
     return MaterialApp(
         title: appTitle,
+        debugShowCheckedModeBanner: false,
         theme: ThemeData(
           useMaterial3: true,
           brightness: Brightness.light,

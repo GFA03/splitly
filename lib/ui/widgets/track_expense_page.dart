@@ -185,6 +185,7 @@ class _TrackExpenseState extends State<TrackExpense> {
                         : const SizedBox(
                             height: 0,
                           ),
+                    //TODO: make that you can input double numbers
                     (buttonSelected == 1 || buttonSelected == 2)
                         ? TextFormField(
                             validator: (inputValue) {
@@ -197,6 +198,7 @@ class _TrackExpenseState extends State<TrackExpense> {
                               }
                               return null;
                             },
+                      keyboardType: TextInputType.number,
                             enabled:
                                 ((buttonSelected == 1 || buttonSelected == 2) &&
                                     !submitted),
