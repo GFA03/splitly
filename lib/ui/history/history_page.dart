@@ -25,11 +25,14 @@ class _HistoryPageState extends State<HistoryPage> {
   @override
   void initState() {
     super.initState();
-    expenses = widget.friend.expenses.reversed.toList();
+    expenses = widget.friend.expenses;
   }
 
   void deleteExpense(int index) {
-    Expense deletedExpense = expenses.removeAt(index);
+    Expense deletedExpense = expenses[index];
+    setState(() {
+      expenses.removeAt(index);
+    });
     widget.onExpenseDeleted();
 
     showSnackBar(context, '${deletedExpense.name} deleted', 'Undo', () {
@@ -46,7 +49,10 @@ class _HistoryPageState extends State<HistoryPage> {
       appBar: AppBar(title: const Text('Splitly')),
       body: ListView.builder(
         itemCount: expenses.length,
-        itemBuilder: (context, index) => _buildExpenseItem(index),
+        itemBuilder: (context, index) {
+          int reverseIndex = expenses.length - index - 1;
+          return _buildExpenseItem(reverseIndex);
+          },
       ),
     );
   }
@@ -63,6 +69,7 @@ class _HistoryPageState extends State<HistoryPage> {
       child: GestureDetector(
         onTap: () => _showExpenseDetails(expense),
         child: ExpenseCard(expense: expense),
+        // child: Container(),
       ),
     );
   }
