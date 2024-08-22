@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:splitly/ui/friends/friend_card.dart';
 import 'package:splitly/data/models/friend_profile.dart';
+import 'package:splitly/utils.dart';
 
 class FriendsPage extends StatefulWidget {
   const FriendsPage({super.key, required this.onFriendSelected});
@@ -30,7 +31,7 @@ class _FriendsPageState extends State<FriendsPage> {
       persons.removeAt(index);
     });
 
-    _showSnackBar('${deletedFriend.name} deleted', 'Undo', () {
+    showSnackBar(context, '${deletedFriend.name} deleted', 'Undo', () {
       setState(() {
         persons.insert(index, deletedFriend);
       });
@@ -41,7 +42,7 @@ class _FriendsPageState extends State<FriendsPage> {
     setState(() {
       persons[index].name = newName;
     });
-    _showSnackBar('${persons[index].name} edited successfully!');
+    showSnackBar(context, '${persons[index].name} edited successfully!');
   }
 
   void _addFriend(String? newFriendName) {
@@ -49,22 +50,11 @@ class _FriendsPageState extends State<FriendsPage> {
       setState(() {
         persons.add(FriendProfile(newFriendName, defaultProfileImage));
       });
-      _showSnackBar('$newFriendName added');
+      showSnackBar(context, '$newFriendName added');
       Navigator.of(context).pop();
     } else {
-      _showSnackBar('Friend\'s name cannot be empty!');
+      showSnackBar(context, 'Friend\'s name cannot be empty!');
     }
-  }
-
-  void _showSnackBar(String message,
-      [String? actionLabel, VoidCallback? action]) {
-    final snackBar = SnackBar(
-      content: Text(message),
-      action: actionLabel != null
-          ? SnackBarAction(label: actionLabel, onPressed: action!)
-          : null,
-    );
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
   @override
