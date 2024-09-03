@@ -21,7 +21,8 @@ class _TrackExpenseState extends State<TrackExpense> {
   final RegExp _digitRegex = RegExp(r'^[0-9]+(\.[0-9]{1,2})?$');
   final Expense expense = Expense();
   bool submitted = false;
-  int buttonSelected = 0;
+
+  PaymentOptions paymentView = PaymentOptions.you;
 
   @override
   void initState() {
@@ -33,17 +34,17 @@ class _TrackExpenseState extends State<TrackExpense> {
         ..paidByFriend = widget.expense!.paidByFriend
         ..description = widget.expense!.description
         ..date = widget.expense!.date;
-      buttonSelected = _determineButtonSelection();
+      paymentView = _determinePaymentSelection();
     }
   }
 
-  int _determineButtonSelection() {
+  PaymentOptions _determinePaymentSelection() {
     if (expense.paidByUser > 0 && expense.paidByFriend > 0) {
-      return 1; // Both paid
+      return PaymentOptions.both; // Both paid
     } else if (expense.paidByFriend > 0) {
-      return 2; // Friend paid
+      return PaymentOptions.them; // Friend paid
     }
-    return 0; // User paid
+    return PaymentOptions.you; // User paid
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -111,46 +112,6 @@ class _TrackExpenseState extends State<TrackExpense> {
     );
   }
 
-  Widget _buildPaymentButtons() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        _buildPaymentButton(
-          label: 'You',
-          isSelected: buttonSelected == 0,
-          onPressed: () => setState(() => buttonSelected = 0),
-        ),
-        _buildPaymentButton(
-          label: 'Both',
-          isSelected: buttonSelected == 1,
-          onPressed: () => setState(() => buttonSelected = 1),
-        ),
-        _buildPaymentButton(
-          label: widget.friend.name,
-          isSelected: buttonSelected == 2,
-          onPressed: () => setState(() => buttonSelected = 2),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPaymentButton({
-    required String label,
-    required bool isSelected,
-    required VoidCallback onPressed,
-  }) {
-    return ElevatedButton(
-      onPressed: submitted ? null : onPressed,
-      style: ElevatedButton.styleFrom(
-        foregroundColor: isSelected ? Colors.purple : Colors.grey[300],
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-      ),
-      child: Text(label),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -177,7 +138,6 @@ class _TrackExpenseState extends State<TrackExpense> {
                           : null,
                     ),
                     const SizedBox(height: 20),
-
                     TextFormField(
                       decoration: const InputDecoration(
                         labelText: 'Date of Expense',
@@ -190,11 +150,18 @@ class _TrackExpenseState extends State<TrackExpense> {
                       ),
                     ),
                     const SizedBox(height: 20),
-
                     const Text('Who paid?', style: TextStyle(fontSize: 16)),
-                    _buildPaymentButtons(),
+                    PaymentChoice(
+                      paymentView: paymentView,
+                      onPaymentOptionChanged: (PaymentOptions newOption) {
+                        setState(() {
+                          paymentView = newOption;
+                        });
+                      },
+                    ),
                     const SizedBox(height: 50),
-                    if (buttonSelected == 0 || buttonSelected == 1)
+                    if (paymentView == PaymentOptions.you ||
+                        paymentView == PaymentOptions.both)
                       _buildExpenseFormField(
                         label: 'How much have you paid?',
                         initialValue: widget.expense?.paidByUser.toString(),
@@ -207,9 +174,10 @@ class _TrackExpenseState extends State<TrackExpense> {
                         onSaved: (value) =>
                             expense.paidByUser = double.parse(value ?? '0'),
                       ),
-                    if (buttonSelected == 1)
-                      const SizedBox(height:20),
-                    if (buttonSelected == 1 || buttonSelected == 2)
+                    if (paymentView == PaymentOptions.both)
+                      const SizedBox(height: 20),
+                    if (paymentView == PaymentOptions.both ||
+                        paymentView == PaymentOptions.them)
                       _buildExpenseFormField(
                         label: 'How much have they paid?',
                         initialValue: widget.expense?.paidByFriend.toString(),
@@ -255,6 +223,55 @@ class _TrackExpenseState extends State<TrackExpense> {
           ],
         ),
       ),
+    );
+  }
+}
+
+enum PaymentOptions { you, both, them }
+
+class PaymentChoice extends StatefulWidget {
+  const PaymentChoice({super.key, required this.paymentView, required this.onPaymentOptionChanged});
+
+  final PaymentOptions paymentView;
+  final ValueChanged<PaymentOptions> onPaymentOptionChanged;
+
+  @override
+  State<PaymentChoice> createState() => _PaymentChoiceState();
+}
+
+class _PaymentChoiceState extends State<PaymentChoice> {
+  late PaymentOptions paymentView;
+
+  @override
+  void initState() {
+    super.initState();
+    paymentView = widget.paymentView;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SegmentedButton(
+      segments: const <ButtonSegment<PaymentOptions>>[
+        ButtonSegment<PaymentOptions>(
+          value: PaymentOptions.you,
+          label: Text('You'),
+        ),
+        ButtonSegment<PaymentOptions>(
+          value: PaymentOptions.both,
+          label: Text('Both'),
+        ),
+        ButtonSegment<PaymentOptions>(
+          value: PaymentOptions.them,
+          label: Text('Them'),
+        ),
+      ],
+      selected: <PaymentOptions>{paymentView},
+      onSelectionChanged: (Set<PaymentOptions> newSelection) {
+        setState(() {
+          paymentView = newSelection.first;
+          widget.onPaymentOptionChanged(paymentView);
+        });
+      },
     );
   }
 }
