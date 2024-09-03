@@ -31,7 +31,8 @@ class _TrackExpenseState extends State<TrackExpense> {
         ..name = widget.expense!.name
         ..paidByUser = widget.expense!.paidByUser
         ..paidByFriend = widget.expense!.paidByFriend
-        ..description = widget.expense!.description;
+        ..description = widget.expense!.description
+        ..date = widget.expense!.date;
       buttonSelected = _determineButtonSelection();
     }
   }
@@ -43,6 +44,20 @@ class _TrackExpenseState extends State<TrackExpense> {
       return 2; // Friend paid
     }
     return 0; // User paid
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000), // Earliest selectable date
+      lastDate: DateTime.now(), // Latest selectable date
+    );
+    if (pickedDate != null && pickedDate != expense.date) {
+      setState(() {
+        expense.date = pickedDate;
+      });
+    }
   }
 
   void _handleSubmit() {
@@ -58,7 +73,8 @@ class _TrackExpenseState extends State<TrackExpense> {
           ..name = expense.name
           ..paidByUser = expense.paidByUser
           ..paidByFriend = expense.paidByFriend
-          ..description = expense.description;
+          ..description = expense.description
+          ..date = expense.date;
         Navigator.pop(context, widget.expense);
       } else {
         Navigator.pop(context, expense);
@@ -160,7 +176,21 @@ class _TrackExpenseState extends State<TrackExpense> {
                           ? 'Please enter some text!'
                           : null,
                     ),
-                    const SizedBox(height: 50),
+                    const SizedBox(height: 20),
+
+                    TextFormField(
+                      decoration: const InputDecoration(
+                        labelText: 'Date of Expense',
+                        labelStyle: TextStyle(color: Colors.purple),
+                      ),
+                      readOnly: true,
+                      onTap: () => _selectDate(context), // Open date picker
+                      controller: TextEditingController(
+                        text: "${expense.date.toLocal()}".split(' ')[0],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
                     const Text('Who paid?', style: TextStyle(fontSize: 16)),
                     _buildPaymentButtons(),
                     const SizedBox(height: 50),
