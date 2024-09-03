@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:splitly/data/models/expense.dart';
 import 'package:splitly/utils.dart';
 
-class ExpenseCard extends StatefulWidget {
+class ExpenseCard extends StatelessWidget {
   const ExpenseCard({
     super.key,
     required this.expense,
@@ -11,53 +11,68 @@ class ExpenseCard extends StatefulWidget {
   final Expense expense;
 
   @override
-  State<ExpenseCard> createState() => _ExpenseCardState();
-}
-
-class _ExpenseCardState extends State<ExpenseCard> {
-  @override
   Widget build(BuildContext context) {
     return Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Card(
-          elevation: 10.0,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(widget.expense.name),
-                    Text(
-                      formatDate(widget.expense.date),
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-                const Spacer(),
-                Column(children: [
-                  Center(
-                    child: Text(
-                      '${widget.expense.totalCost}\$',
-                    ),
-                  ),
-                  Text(
-                    '(Paid by ${widget.expense.payer})',
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 10,
-                    ),
-                  ),
-                ])
-              ],
-            ),
+      padding: const EdgeInsets.all(8.0),
+      child: Card(
+        elevation: 10.0,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildExpenseDetails(),
+              const Spacer(),
+              _buildCostDetails(),
+            ],
           ),
         ),
-      );
+      ),
+    );
+  }
+
+  Column _buildExpenseDetails() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          expense.name,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 4.0),
+        Text(
+          formatDate(expense.date),
+          style: TextStyle(
+            color: Colors.grey[600],
+            fontSize: 12,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Column _buildCostDetails() {
+    return Column(
+      children: [
+        Text(
+          '${expense.totalCost}\$',
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 4.0),
+        Text(
+          '(Paid by ${expense.payer})',
+          style: TextStyle(
+            color: Colors.grey[600],
+            fontSize: 10,
+          ),
+        ),
+      ],
+    );
   }
 }
