@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:splitly/ui/balance/components/balance_card.dart';
 import 'package:splitly/data/models/friend_profile.dart';
-import 'package:splitly/ui/widgets/track_expense_page.dart';
+import 'package:splitly/ui/trackExpense/track_expense_page.dart';
 
 class BalancePage extends StatefulWidget {
   const BalancePage({

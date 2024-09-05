@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:splitly/ui/friends/friend_card.dart';
+import 'package:splitly/ui/friends/components/friend_card.dart';
 import 'package:splitly/data/models/friend_profile.dart';
 import 'package:splitly/utils.dart';
 
