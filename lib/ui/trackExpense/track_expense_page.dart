@@ -91,27 +91,6 @@ class _TrackExpenseState extends State<TrackExpense> {
     }
   }
 
-  Widget _buildExpenseFormField({
-    required String label,
-    required String? initialValue,
-    required bool enabled,
-    required void Function(String?) onSaved,
-    String? Function(String?)? validator,
-    TextInputType keyboardType = TextInputType.text,
-  }) {
-    return TextFormField(
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: const TextStyle(color: Colors.purple),
-      ),
-      initialValue: initialValue,
-      enabled: enabled,
-      validator: validator,
-      onSaved: onSaved,
-      keyboardType: keyboardType,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -160,36 +139,7 @@ class _TrackExpenseState extends State<TrackExpense> {
                       },
                     ),
                     const SizedBox(height: 50),
-                    if (paymentView == PaymentOptions.you ||
-                        paymentView == PaymentOptions.both)
-                      _buildExpenseFormField(
-                        label: 'How much have you paid?',
-                        initialValue: widget.expense?.paidByUser.toString(),
-                        enabled: !submitted,
-                        keyboardType: TextInputType.number,
-                        validator: (value) =>
-                            (value == null || !_digitRegex.hasMatch(value))
-                                ? 'Please enter a number!'
-                                : null,
-                        onSaved: (value) =>
-                            expense.paidByUser = double.parse(value ?? '0'),
-                      ),
-                    if (paymentView == PaymentOptions.both)
-                      const SizedBox(height: 20),
-                    if (paymentView == PaymentOptions.both ||
-                        paymentView == PaymentOptions.them)
-                      _buildExpenseFormField(
-                        label: 'How much have they paid?',
-                        initialValue: widget.expense?.paidByFriend.toString(),
-                        enabled: !submitted,
-                        keyboardType: TextInputType.number,
-                        validator: (value) =>
-                            (value == null || !_digitRegex.hasMatch(value))
-                                ? 'Please enter a number!'
-                                : null,
-                        onSaved: (value) =>
-                            expense.paidByFriend = double.parse(value ?? '0'),
-                      ),
+                    _buildPaidAmountFields(),
                     const SizedBox(height: 50),
                     _buildExpenseFormField(
                       label: 'Description (optional):',
@@ -199,22 +149,7 @@ class _TrackExpenseState extends State<TrackExpense> {
                       keyboardType: TextInputType.multiline,
                     ),
                     const Spacer(),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      child: ElevatedButton(
-                        onPressed: _handleSubmit,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.purple,
-                          textStyle: const TextStyle(fontSize: 20),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 75, vertical: 20),
-                        ),
-                        child: const Text(
-                          'Submit',
-                          style: TextStyle(fontSize: 18, color: Colors.white),
-                        ),
-                      ),
-                    ),
+                    _buildSubmitButton(),
                     const SizedBox(height: 100),
                   ],
                 ),
@@ -225,12 +160,98 @@ class _TrackExpenseState extends State<TrackExpense> {
       ),
     );
   }
+
+  Widget _buildPaidAmountFields() {
+    return Column(
+      children: [
+        _buildYouPaidField(),
+        if (paymentView == PaymentOptions.both) const SizedBox(height: 20),
+        _buildThemPaidField(),
+      ],
+    );
+  }
+
+  Widget _buildYouPaidField() {
+    if (paymentView == PaymentOptions.you ||
+        paymentView == PaymentOptions.both) {
+      return _buildExpenseFormField(
+        label: 'How much have you paid?',
+        initialValue: widget.expense?.paidByUser.toString(),
+        enabled: !submitted,
+        keyboardType: TextInputType.number,
+        validator: (value) => (value == null || !_digitRegex.hasMatch(value))
+            ? 'Please enter a number!'
+            : null,
+        onSaved: (value) => expense.paidByUser = double.parse(value ?? '0'),
+      );
+    }
+    return const SizedBox.shrink();
+  }
+
+  Widget _buildThemPaidField() {
+    if (paymentView == PaymentOptions.both ||
+        paymentView == PaymentOptions.them) {
+      return _buildExpenseFormField(
+        label: 'How much have they paid?',
+        initialValue: widget.expense?.paidByFriend.toString(),
+        enabled: !submitted,
+        keyboardType: TextInputType.number,
+        validator: (value) => (value == null || !_digitRegex.hasMatch(value))
+            ? 'Please enter a number!'
+            : null,
+        onSaved: (value) => expense.paidByFriend = double.parse(value ?? '0'),
+      );
+    }
+    return const SizedBox.shrink();
+  }
+
+  Padding _buildSubmitButton() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: ElevatedButton(
+        onPressed: _handleSubmit,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.purple,
+          textStyle: const TextStyle(fontSize: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 75, vertical: 20),
+        ),
+        child: const Text(
+          'Submit',
+          style: TextStyle(fontSize: 18, color: Colors.white),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildExpenseFormField({
+    required String label,
+    required String? initialValue,
+    required bool enabled,
+    required void Function(String?) onSaved,
+    String? Function(String?)? validator,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
+    return TextFormField(
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(color: Colors.purple),
+      ),
+      initialValue: initialValue,
+      enabled: enabled,
+      validator: validator,
+      onSaved: onSaved,
+      keyboardType: keyboardType,
+    );
+  }
 }
 
 enum PaymentOptions { you, both, them }
 
 class PaymentChoice extends StatefulWidget {
-  const PaymentChoice({super.key, required this.paymentView, required this.onPaymentOptionChanged});
+  const PaymentChoice(
+      {super.key,
+      required this.paymentView,
+      required this.onPaymentOptionChanged});
 
   final PaymentOptions paymentView;
   final ValueChanged<PaymentOptions> onPaymentOptionChanged;
