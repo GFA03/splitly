@@ -1,15 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:splitly/data/models/expense.dart';
-import 'package:splitly/data/models/friend_profile.dart';
+
+import '../../data/models/expense.dart';
 
 class TrackExpense extends StatefulWidget {
-  const TrackExpense({
-    super.key,
-    required this.friend,
-    this.expense,
-  });
+  const TrackExpense({super.key, this.expense});
 
-  final FriendProfile friend;
   final Expense? expense;
 
   @override
@@ -18,7 +13,6 @@ class TrackExpense extends StatefulWidget {
 
 class _TrackExpenseState extends State<TrackExpense> {
   final _formKey = GlobalKey<FormState>();
-  final RegExp _digitRegex = RegExp(r'^[0-9]+(\.[0-9]{1,2})?$');
   final Expense expense = Expense();
   bool submitted = false;
 
@@ -30,6 +24,8 @@ class _TrackExpenseState extends State<TrackExpense> {
     if (widget.expense != null) {
       expense
         ..name = widget.expense!.name
+        ..shouldBePaidByUser = widget.expense!.shouldBePaidByUser
+        ..shouldBePaidByFriend = widget.expense!.shouldBePaidByFriend
         ..paidByUser = widget.expense!.paidByUser
         ..paidByFriend = widget.expense!.paidByFriend
         ..description = widget.expense!.description
@@ -40,25 +36,11 @@ class _TrackExpenseState extends State<TrackExpense> {
 
   PaymentOptions _determinePaymentSelection() {
     if (expense.paidByUser > 0 && expense.paidByFriend > 0) {
-      return PaymentOptions.both; // Both paid
+      return PaymentOptions.both;
     } else if (expense.paidByFriend > 0) {
-      return PaymentOptions.them; // Friend paid
+      return PaymentOptions.them;
     }
-    return PaymentOptions.you; // User paid
-  }
-
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? pickedDate = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2000), // Earliest selectable date
-      lastDate: DateTime.now(), // Latest selectable date
-    );
-    if (pickedDate != null && pickedDate != expense.date) {
-      setState(() {
-        expense.date = pickedDate;
-      });
-    }
+    return PaymentOptions.you;
   }
 
   void _handleSubmit() {
@@ -69,9 +51,22 @@ class _TrackExpenseState extends State<TrackExpense> {
 
       _formKey.currentState!.save();
 
+      if (expense.description != null && expense.description!.isEmpty) {
+        expense.description = null;
+      }
+      if (paymentView == PaymentOptions.you) {
+        expense.paidByUser =
+            expense.shouldBePaidByUser + expense.shouldBePaidByFriend;
+      } else if (paymentView == PaymentOptions.them) {
+        expense.paidByFriend =
+            expense.shouldBePaidByUser + expense.shouldBePaidByFriend;
+      }
+
       if (widget.expense != null) {
         widget.expense!
           ..name = expense.name
+          ..shouldBePaidByUser = expense.shouldBePaidByUser
+          ..shouldBePaidByFriend = expense.shouldBePaidByFriend
           ..paidByUser = expense.paidByUser
           ..paidByFriend = expense.paidByFriend
           ..description = expense.description
@@ -94,143 +89,232 @@ class _TrackExpenseState extends State<TrackExpense> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Splitly')),
+      appBar: AppBar(title: const Text('Track Expense')),
       body: Form(
         key: _formKey,
-        child: CustomScrollView(
-          slivers: [
-            SliverFillRemaining(
-              hasScrollBody: false,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const SizedBox(height: 70),
-                    _buildExpenseFormField(
-                      label: 'Expense name',
-                      initialValue: widget.expense?.name,
-                      enabled: !submitted,
-                      onSaved: (value) => expense.name = value!,
-                      validator: (value) => value == null || value.isEmpty
-                          ? 'Please enter some text!'
-                          : null,
-                    ),
-                    const SizedBox(height: 20),
-                    TextFormField(
-                      decoration: const InputDecoration(
-                        labelText: 'Date of Expense',
-                        labelStyle: TextStyle(color: Colors.purple),
-                      ),
-                      readOnly: true,
-                      onTap: () => _selectDate(context), // Open date picker
-                      controller: TextEditingController(
-                        text: "${expense.date.toLocal()}".split(' ')[0],
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    const Text('Who paid?', style: TextStyle(fontSize: 16)),
-                    PaymentChoice(
-                      paymentView: paymentView,
-                      onPaymentOptionChanged: (PaymentOptions newOption) {
-                        setState(() {
-                          paymentView = newOption;
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 50),
-                    _buildPaidAmountFields(),
-                    const SizedBox(height: 50),
-                    _buildExpenseFormField(
-                      label: 'Description (optional):',
-                      initialValue: widget.expense?.description,
-                      enabled: !submitted,
-                      onSaved: (value) => expense.description = value,
-                      keyboardType: TextInputType.multiline,
-                    ),
-                    const Spacer(),
-                    _buildSubmitButton(),
-                    const SizedBox(height: 100),
-                  ],
-                ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Center(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 20),
+                  ExpenseDetailsSection(
+                    expense: expense,
+                    submitted: submitted,
+                    onNameSaved: (value) => expense.name = value!,
+                    onDescriptionSaved: (value) => expense.description = value,
+                    onDateSelected: (date) =>
+                        setState(() => expense.date = date),
+                  ),
+                  const SizedBox(height: 20),
+                  PaymentChoice(
+                    paymentView: paymentView,
+                    onPaymentOptionChanged: (PaymentOptions newOption) {
+                      setState(() {
+                        paymentView = newOption;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  ShouldBePaidSection(
+                    expense: expense,
+                    submitted: submitted,
+                    onSavedShouldBePaidByUser: (value) =>
+                        expense.shouldBePaidByUser = double.parse(value ?? '0'),
+                    onSavedShouldBePaidByFriend: (value) => expense
+                        .shouldBePaidByFriend = double.parse(value ?? '0'),
+                  ),
+                  const SizedBox(height: 20),
+                  PaidAmountsSection(
+                    expense: expense,
+                    paymentView: paymentView,
+                    submitted: submitted,
+                    onSavedPaidByUser: (value) =>
+                        expense.paidByUser = double.parse(value ?? '0'),
+                    onSavedPaidByFriend: (value) =>
+                        expense.paidByFriend = double.parse(value ?? '0'),
+                  ),
+                  const SizedBox(height: 50),
+                  SubmitButton(onPressed: _handleSubmit),
+                ],
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
   }
+}
 
-  Widget _buildPaidAmountFields() {
+// Widget for the expense details (name, description, and date)
+class ExpenseDetailsSection extends StatelessWidget {
+  const ExpenseDetailsSection({
+    super.key,
+    required this.expense,
+    required this.submitted,
+    required this.onNameSaved,
+    required this.onDescriptionSaved,
+    required this.onDateSelected,
+  });
+
+  final Expense expense;
+  final bool submitted;
+  final void Function(String?) onNameSaved;
+  final void Function(String?) onDescriptionSaved;
+  final void Function(DateTime) onDateSelected;
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       children: [
-        _buildYouPaidField(),
-        if (paymentView == PaymentOptions.both) const SizedBox(height: 20),
-        _buildThemPaidField(),
+        ExpenseInputField(
+          label: 'Expense name',
+          initialValue: expense.name,
+          enabled: !submitted,
+          onSaved: onNameSaved,
+          validator: (value) =>
+              value == null || value.isEmpty ? 'Please enter some text!' : null,
+        ),
+        const SizedBox(height: 20),
+        ExpenseDatePicker(
+          selectedDate: expense.date,
+          onDateSelected: onDateSelected,
+        ),
+        const SizedBox(height: 20),
+        ExpenseInputField(
+          label: 'Description (optional)',
+          initialValue: expense.description,
+          enabled: !submitted,
+          onSaved: onDescriptionSaved,
+          keyboardType: TextInputType.multiline,
+        ),
       ],
     );
   }
+}
 
-  Widget _buildYouPaidField() {
-    if (paymentView == PaymentOptions.you ||
-        paymentView == PaymentOptions.both) {
-      return _buildExpenseFormField(
-        label: 'How much have you paid?',
-        initialValue: widget.expense?.paidByUser.toString(),
-        enabled: !submitted,
-        keyboardType: TextInputType.number,
-        validator: (value) => (value == null || !_digitRegex.hasMatch(value))
-            ? 'Please enter a number!'
-            : null,
-        onSaved: (value) => expense.paidByUser = double.parse(value ?? '0'),
-      );
-    }
-    return const SizedBox.shrink();
-  }
+// Widget for the "Should be paid" fields
+class ShouldBePaidSection extends StatelessWidget {
+  const ShouldBePaidSection({
+    super.key,
+    required this.expense,
+    required this.submitted,
+    required this.onSavedShouldBePaidByUser,
+    required this.onSavedShouldBePaidByFriend,
+  });
 
-  Widget _buildThemPaidField() {
-    if (paymentView == PaymentOptions.both ||
-        paymentView == PaymentOptions.them) {
-      return _buildExpenseFormField(
-        label: 'How much have they paid?',
-        initialValue: widget.expense?.paidByFriend.toString(),
-        enabled: !submitted,
-        keyboardType: TextInputType.number,
-        validator: (value) => (value == null || !_digitRegex.hasMatch(value))
-            ? 'Please enter a number!'
-            : null,
-        onSaved: (value) => expense.paidByFriend = double.parse(value ?? '0'),
-      );
-    }
-    return const SizedBox.shrink();
-  }
+  final Expense expense;
+  final bool submitted;
+  final void Function(String?) onSavedShouldBePaidByUser;
+  final void Function(String?) onSavedShouldBePaidByFriend;
 
-  Padding _buildSubmitButton() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: ElevatedButton(
-        onPressed: _handleSubmit,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.purple,
-          textStyle: const TextStyle(fontSize: 20),
-          padding: const EdgeInsets.symmetric(horizontal: 75, vertical: 20),
+  @override
+  Widget build(BuildContext context) {
+    final RegExp digitRegex = RegExp(r'^[0-9]+(\.[0-9]{1,2})?$');
+    return Column(
+      children: [
+        ExpenseInputField(
+          label: 'Should be paid by you',
+          initialValue: expense.shouldBePaidByUser.toString(),
+          enabled: !submitted,
+          onSaved: onSavedShouldBePaidByUser,
+          keyboardType: TextInputType.number,
+          validator: (value) => (value == null || !digitRegex.hasMatch(value))
+              ? 'Please enter a valid amount!'
+              : null,
         ),
-        child: const Text(
-          'Submit',
-          style: TextStyle(fontSize: 18, color: Colors.white),
+        const SizedBox(height: 20),
+        ExpenseInputField(
+          label: 'Should be paid by them',
+          initialValue: expense.shouldBePaidByFriend.toString(),
+          enabled: !submitted,
+          onSaved: onSavedShouldBePaidByFriend,
+          keyboardType: TextInputType.number,
+          validator: (value) => (value == null || !digitRegex.hasMatch(value))
+              ? 'Please enter a valid amount!'
+              : null,
         ),
-      ),
+      ],
     );
   }
+}
 
-  Widget _buildExpenseFormField({
-    required String label,
-    required String? initialValue,
-    required bool enabled,
-    required void Function(String?) onSaved,
-    String? Function(String?)? validator,
-    TextInputType keyboardType = TextInputType.text,
-  }) {
+enum PaymentOptions { you, both, them }
+
+// Widget for "Paid Amount" fields for both user and friend
+class PaidAmountsSection extends StatelessWidget {
+  const PaidAmountsSection({
+    super.key,
+    required this.expense,
+    required this.paymentView,
+    required this.submitted,
+    required this.onSavedPaidByUser,
+    required this.onSavedPaidByFriend,
+  });
+
+  final Expense expense;
+  final PaymentOptions paymentView;
+  final bool submitted;
+  final void Function(String?) onSavedPaidByUser;
+  final void Function(String?) onSavedPaidByFriend;
+
+  @override
+  Widget build(BuildContext context) {
+    final RegExp digitRegex = RegExp(r'^[0-9]+(\.[0-9]{1,2})?$');
+    if (paymentView == PaymentOptions.both) {
+      return Column(
+        children: [
+          ExpenseInputField(
+            label: 'How much have you paid?',
+            initialValue: expense.paidByUser.toString(),
+            enabled: !submitted,
+            onSaved: onSavedPaidByUser,
+            keyboardType: TextInputType.number,
+            validator: (value) => (value == null || !digitRegex.hasMatch(value))
+                ? 'Please enter a valid number!'
+                : null,
+          ),
+          const SizedBox(height: 20),
+          ExpenseInputField(
+            label: 'How much have they paid?',
+            initialValue: expense.paidByFriend.toString(),
+            enabled: !submitted,
+            onSaved: onSavedPaidByFriend,
+            keyboardType: TextInputType.number,
+            validator: (value) => (value == null || !digitRegex.hasMatch(value))
+                ? 'Please enter a valid number!'
+                : null,
+          ),
+        ],
+      );
+    }
+    return const SizedBox.shrink();
+  }
+}
+
+// Reusable widget for input fields
+class ExpenseInputField extends StatelessWidget {
+  const ExpenseInputField({
+    super.key,
+    required this.label,
+    required this.initialValue,
+    required this.enabled,
+    required this.onSaved,
+    this.keyboardType = TextInputType.text,
+    this.validator,
+  });
+
+  final String label;
+  final String? initialValue;
+  final bool enabled;
+  final void Function(String?) onSaved;
+  final TextInputType keyboardType;
+  final String? Function(String?)? validator;
+
+  @override
+  Widget build(BuildContext context) {
     return TextFormField(
       decoration: InputDecoration(
         labelText: label,
@@ -238,14 +322,49 @@ class _TrackExpenseState extends State<TrackExpense> {
       ),
       initialValue: initialValue,
       enabled: enabled,
+      keyboardType: keyboardType,
       validator: validator,
       onSaved: onSaved,
-      keyboardType: keyboardType,
     );
   }
 }
 
-enum PaymentOptions { you, both, them }
+// Date picker widget
+class ExpenseDatePicker extends StatelessWidget {
+  const ExpenseDatePicker({
+    super.key,
+    required this.selectedDate,
+    required this.onDateSelected,
+  });
+
+  final DateTime selectedDate;
+  final void Function(DateTime) onDateSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextFormField(
+      decoration: const InputDecoration(
+        labelText: 'Date of Expense',
+        labelStyle: TextStyle(color: Colors.purple),
+      ),
+      readOnly: true,
+      onTap: () async {
+        final DateTime? pickedDate = await showDatePicker(
+          context: context,
+          initialDate: selectedDate,
+          firstDate: DateTime(2000),
+          lastDate: DateTime.now(),
+        );
+        if (pickedDate != null) {
+          onDateSelected(pickedDate);
+        }
+      },
+      controller: TextEditingController(
+        text: "${selectedDate.toLocal()}".split(' ')[0],
+      ),
+    );
+  }
+}
 
 class PaymentChoice extends StatefulWidget {
   const PaymentChoice(
@@ -271,28 +390,63 @@ class _PaymentChoiceState extends State<PaymentChoice> {
 
   @override
   Widget build(BuildContext context) {
-    return SegmentedButton(
-      segments: const <ButtonSegment<PaymentOptions>>[
-        ButtonSegment<PaymentOptions>(
-          value: PaymentOptions.you,
-          label: Text('You'),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Who paid?',
+          style: Theme.of(context)
+              .textTheme
+              .titleSmall
+              ?.copyWith(color: Colors.purple),
         ),
-        ButtonSegment<PaymentOptions>(
-          value: PaymentOptions.both,
-          label: Text('Both'),
-        ),
-        ButtonSegment<PaymentOptions>(
-          value: PaymentOptions.them,
-          label: Text('Them'),
+        SegmentedButton(
+          segments: const <ButtonSegment<PaymentOptions>>[
+            ButtonSegment<PaymentOptions>(
+              value: PaymentOptions.you,
+              label: Text('You'),
+            ),
+            ButtonSegment<PaymentOptions>(
+              value: PaymentOptions.both,
+              label: Text('Both'),
+            ),
+            ButtonSegment<PaymentOptions>(
+              value: PaymentOptions.them,
+              label: Text('Them'),
+            ),
+          ],
+          selected: <PaymentOptions>{paymentView},
+          onSelectionChanged: (Set<PaymentOptions> newSelection) {
+            setState(() {
+              paymentView = newSelection.first;
+              widget.onPaymentOptionChanged(paymentView);
+            });
+          },
         ),
       ],
-      selected: <PaymentOptions>{paymentView},
-      onSelectionChanged: (Set<PaymentOptions> newSelection) {
-        setState(() {
-          paymentView = newSelection.first;
-          widget.onPaymentOptionChanged(paymentView);
-        });
-      },
+    );
+  }
+}
+
+// Submit button widget
+class SubmitButton extends StatelessWidget {
+  const SubmitButton({super.key, required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.purple,
+          padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 12),
+        ),
+        child: const Text('Submit',
+            style: TextStyle(fontSize: 18, color: Colors.white)),
+      ),
     );
   }
 }

@@ -90,7 +90,7 @@ class _HistoryPageState extends State<HistoryPage> {
     );
   }
 
-  Widget _buildExpenseDetailsSheet(expense) {
+  Widget _buildExpenseDetailsSheet(Expense expense) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -104,6 +104,11 @@ class _HistoryPageState extends State<HistoryPage> {
           const SizedBox(height: 10.0),
           Text('Paid by: ${expense.payer}',
               style: Theme.of(context).textTheme.titleSmall),
+          const SizedBox(height: 4.0),
+          Text('Your consumption: ${expense.shouldBePaidByUser}',
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(color: Colors.grey)),
+          Text('Their consumption: ${expense.shouldBePaidByFriend}',
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(color: Colors.grey)),
           ...?_buildExpenseDetailsDescription(expense),
         ],
       ),
@@ -128,7 +133,7 @@ class _HistoryPageState extends State<HistoryPage> {
               context,
               MaterialPageRoute(
                   builder: (context) =>
-                      TrackExpense(friend: widget.friend, expense: expense)),
+                      TrackExpense(expense: expense)),
             );
 
             if (editedExpense != null) {

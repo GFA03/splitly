@@ -23,7 +23,7 @@ class FriendProfile {
     return expenses.fold<double>(
         0,
         (previousValue, element) =>
-            previousValue + (element.paidByUser - element.paidByFriend));
+            previousValue + element.balance);
   }
 }
 

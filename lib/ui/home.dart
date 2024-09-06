@@ -58,6 +58,7 @@ class _HomeState extends State<Home> {
       )
     ];
     return Scaffold(
+      resizeToAvoidBottomInset: false, // avoid overflow issue when going back to home page with mobile keyboard opened
       appBar: AppBar(
         title: Text(widget.appTitle),
         elevation: 4.0,

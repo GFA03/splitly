@@ -57,7 +57,7 @@ class _BalancePageState extends State<BalancePage> {
           final newExpense = await Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (context) => TrackExpense(friend: widget.friend!)),
+                builder: (context) => const TrackExpense()),
           );
 
           if (newExpense != null) {
