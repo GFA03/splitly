@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:splitly/ui/widgets/buttons/large_button.dart';
 
 import '../../data/models/expense.dart';
 
@@ -137,7 +138,7 @@ class _TrackExpenseState extends State<TrackExpense> {
                         expense.paidByFriend = double.parse(value ?? '0'),
                   ),
                   const SizedBox(height: 50),
-                  SubmitButton(onPressed: _handleSubmit),
+                  LargeButton(onPressed: _handleSubmit, label: 'Submit')
                 ],
               ),
             ),
@@ -424,29 +425,6 @@ class _PaymentChoiceState extends State<PaymentChoice> {
           },
         ),
       ],
-    );
-  }
-}
-
-// Submit button widget
-class SubmitButton extends StatelessWidget {
-  const SubmitButton({super.key, required this.onPressed});
-
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.purple,
-          padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 12),
-        ),
-        child: const Text('Submit',
-            style: TextStyle(fontSize: 18, color: Colors.white)),
-      ),
     );
   }
 }

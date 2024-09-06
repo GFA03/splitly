@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:splitly/ui/balance/components/balance_card.dart';
 import 'package:splitly/data/models/friend_profile.dart';
 import 'package:splitly/ui/trackExpense/track_expense_page.dart';
+import 'package:splitly/ui/widgets/buttons/large_button.dart';
 
 class BalancePage extends StatefulWidget {
   const BalancePage({
@@ -51,13 +52,12 @@ class _BalancePageState extends State<BalancePage> {
     );
   }
 
-  ElevatedButton _trackExpenseButton(BuildContext context) {
-    return ElevatedButton(
+  LargeButton _trackExpenseButton(BuildContext context) {
+    return LargeButton(
         onPressed: () async {
           final newExpense = await Navigator.push(
             context,
-            MaterialPageRoute(
-                builder: (context) => const TrackExpense()),
+            MaterialPageRoute(builder: (context) => const TrackExpense()),
           );
 
           if (newExpense != null) {
@@ -66,29 +66,17 @@ class _BalancePageState extends State<BalancePage> {
             });
           }
         },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.purple,
-          textStyle: const TextStyle(fontSize: 20),
-          padding: const EdgeInsets.symmetric(horizontal: 75, vertical: 20),
-        ),
-        child: const Text(
-          'Track expense',
-          style: TextStyle(
-            fontSize: 18,
-            color: Colors.white,
-          ),
-        ),
-      );
+        label: 'Track Expense');
   }
 
   Text _welcomeUser() {
     return Text(
-        'Hello ${widget.name}',
-        style: const TextStyle(
-          fontSize: 18.0,
-          fontWeight: FontWeight.bold,
-        ),
-      );
+      'Hello ${widget.name}',
+      style: const TextStyle(
+        fontSize: 18.0,
+        fontWeight: FontWeight.bold,
+      ),
+    );
   }
 
   Center _buildNoFriendSelected() {
