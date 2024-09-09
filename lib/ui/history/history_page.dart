@@ -1,50 +1,44 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:splitly/providers.dart';
 import 'package:splitly/ui/history/components/expense_card.dart';
 import 'package:splitly/data/models/expense.dart';
 import 'package:splitly/data/models/friend_profile.dart';
 import 'package:splitly/ui/trackExpense/track_expense_page.dart';
 import 'package:splitly/utils.dart';
 
-class HistoryPage extends StatefulWidget {
+class HistoryPage extends ConsumerStatefulWidget {
   const HistoryPage({
     super.key,
     required this.friend,
-    required this.onExpenseDeleted,
   });
 
   final FriendProfile friend;
-  final VoidCallback onExpenseDeleted;
 
   @override
-  _HistoryPageState createState() => _HistoryPageState();
+  ConsumerState createState() => _HistoryPageState();
 }
 
-class _HistoryPageState extends State<HistoryPage> {
-  late List<Expense> expenses;
-
-  @override
-  void initState() {
-    super.initState();
-    expenses = widget.friend.expenses;
-  }
+class _HistoryPageState extends ConsumerState<HistoryPage> {
 
   void deleteExpense(int index) {
+    final repository = ref.watch(repositoryProvider);
+    final List<Expense> expenses = repository.findFriendExpenses(widget.friend.id);
     Expense deletedExpense = expenses[index];
     setState(() {
       expenses.removeAt(index);
     });
-    widget.onExpenseDeleted();
+    repository.deleteExpense(expenses[index]);
 
     showSnackBar(context, '${deletedExpense.name} deleted', 'Undo', () {
-      setState(() {
-        widget.friend.expenses.insert(index, deletedExpense);
-        widget.onExpenseDeleted();
-      });
+      repository.insertExpense(deletedExpense);
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final repository = ref.watch(repositoryProvider);
+    final List<Expense> expenses = repository.findFriendExpenses(widget.friend.id);
     return Scaffold(
       appBar: AppBar(title: const Text('Splitly')),
       body: ListView.builder(
@@ -58,7 +52,9 @@ class _HistoryPageState extends State<HistoryPage> {
   }
 
   Dismissible _buildExpenseItem(int index) {
-    final expense = expenses[index];
+    final repository = ref.watch(repositoryProvider);
+    final List<Expense> expenses = repository.findFriendExpenses(widget.friend.id);
+    Expense expense = expenses[index];
     return Dismissible(
       key: Key(expense.name),
       direction: DismissDirection.endToStart,

@@ -8,7 +8,7 @@ class FriendProfile {
   final String id;
   String name;
   String? imageUrl;
-  List<Expense> expenses = expensesTest;
+  List<Expense> expenses = [];
 
   set setName(String newName) {
     if (newName.isEmpty) {
@@ -25,11 +25,3 @@ class FriendProfile {
         0, (previousValue, element) => previousValue + element.balance);
   }
 }
-
-List<FriendProfile> friends = [
-  FriendProfile(name: 'Alex Gavrila', imageUrl: 'assets/profile_pics/profile_picture2.jpg'),
-  FriendProfile(name: 'James Rodriguez', imageUrl:  'assets/profile_pics/profile_picture3.jpg'),
-  FriendProfile(name: 'Layla Ponta', imageUrl: 'assets/profile_pics/profile_picture4.jpg'),
-  FriendProfile(name: 'Crezulo Davinci', imageUrl: 'assets/profile_pics/profile_picture5.jpg'),
-  FriendProfile(name: 'John Doe', imageUrl: 'assets/profile_pics/profile_picture6.jpg'),
-];

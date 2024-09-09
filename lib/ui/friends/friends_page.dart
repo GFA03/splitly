@@ -1,56 +1,52 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:splitly/providers.dart';
 import 'package:splitly/ui/friends/components/friend_card.dart';
 import 'package:splitly/data/models/friend_profile.dart';
 import 'package:splitly/utils.dart';
 
-class FriendsPage extends StatefulWidget {
+class FriendsPage extends ConsumerStatefulWidget {
   const FriendsPage({super.key, required this.onFriendSelected});
 
   final void Function(FriendProfile) onFriendSelected;
 
   @override
-  State<FriendsPage> createState() => _FriendsPageState();
+  ConsumerState createState() => _FriendsPageState();
 }
 
-class _FriendsPageState extends State<FriendsPage> {
-  late List<FriendProfile> persons;
+class _FriendsPageState extends ConsumerState<FriendsPage> {
+
   static const String defaultProfileImage =
       'assets/profile_pics/profile_picture1.jpg';
-
-  @override
-  void initState() {
-    super.initState();
-    persons = friends;
-  }
 
   //TODO: change State Management to separate concerns
 
   void _deleteFriend(int index) {
-    final deletedFriend = persons[index];
-    setState(() {
-      persons.removeAt(index);
-    });
+    final repository = ref.watch(repositoryProvider);
+    final friends = repository.findAllFriends();
+    final deletedFriend = friends[index];
+    repository.deleteFriend(friends[index]);
 
+
+    // TODO: add the friend back on their last index
     showSnackBar(context, '${deletedFriend.name} deleted', 'Undo', () {
-      setState(() {
-        persons.insert(index, deletedFriend);
-      });
+      repository.insertFriend(deletedFriend);
     });
   }
 
   void _editFriendName(int index, String newName) {
-    setState(() {
-      persons[index].name = newName;
-    });
-    showSnackBar(context, '${persons[index].name} edited successfully!');
+    final repository = ref.watch(repositoryProvider);
+    final friends = repository.findAllFriends();
+    repository.editFriendName(friends[index], newName);
+    showSnackBar(context, '${friends[index].name} edited successfully!');
   }
 
-  void _addFriend(String? newFriendName) {
-    if (newFriendName != null && newFriendName.isNotEmpty) {
-      setState(() {
-        persons.add(FriendProfile(name: newFriendName, imageUrl: defaultProfileImage));
-      });
-      showSnackBar(context, '$newFriendName added');
+  void _addFriend(String? name) {
+    final repository = ref.watch(repositoryProvider);
+    if (name != null && name.isNotEmpty) {
+      final newFriend = FriendProfile(name: name, imageUrl: defaultProfileImage);
+      repository.insertFriend(newFriend);
+      showSnackBar(context, '$name added');
       Navigator.of(context).pop();
     } else {
       showSnackBar(context, 'Friend\'s name cannot be empty!');
@@ -59,9 +55,11 @@ class _FriendsPageState extends State<FriendsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final repository = ref.watch(repositoryProvider);
+    final friends = repository.findAllFriends();
     return Scaffold(
       body: ListView.builder(
-        itemCount: persons.length,
+        itemCount: friends.length,
         itemBuilder: (context, index) {
           return _buildFriendListItem(index);
         },
@@ -112,8 +110,10 @@ class _FriendsPageState extends State<FriendsPage> {
   }
 
   Dismissible _buildFriendListItem(int index) {
+    final repository = ref.watch(repositoryProvider);
+    final friends = repository.findAllFriends();
     return Dismissible(
-      key: Key(persons[index].name),
+      key: Key(friends[index].name),
       direction: DismissDirection.endToStart,
       onDismissed: (direction) {
         _deleteFriend(index);
@@ -128,9 +128,9 @@ class _FriendsPageState extends State<FriendsPage> {
         ),
       ),
       child: GestureDetector(
-        onTap: () => widget.onFriendSelected(persons[index]),
+        onTap: () => widget.onFriendSelected(friends[index]),
         child: FriendCard(
-          friend: persons[index],
+          friend: friends[index],
           onEdit: (newName) => _editFriendName(index, newName),
         ),
       ),

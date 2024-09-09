@@ -88,7 +88,6 @@ class _BalanceCardState extends State<BalanceCard> {
                 MaterialPageRoute(
                   builder: (context) => HistoryPage(
                     friend: widget.friend,
-                    onExpenseDeleted: widget.onExpenseDeleted,
                   ),
                 ),
               );

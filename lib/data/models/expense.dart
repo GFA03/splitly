@@ -4,6 +4,7 @@ class Expense {
   Expense({
     String? id,
     this.name = "",
+    this.friendId = '0',
     this.shouldBePaidByUser = 0.0, // Amount the user should have paid
     this.shouldBePaidByFriend = 0.0, // Amount the friend should have paid
     this.paidByUser = 0.0, // Amount the user actually paid
@@ -15,6 +16,7 @@ class Expense {
 
   final String id;
   String name; // Name of the expense
+  String friendId;
   double shouldBePaidByUser; // How much should have been paid by you
   double shouldBePaidByFriend; // How much should have been paid by the friend
   double paidByUser; // How much you actually paid

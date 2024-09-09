@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:splitly/data/models/friend_profile.dart';
+import 'package:splitly/providers.dart';
 import 'package:splitly/ui/balance/balance_page.dart';
 import 'package:splitly/ui/friends/friends_page.dart';
 
-class Home extends StatefulWidget {
+class Home extends ConsumerStatefulWidget {
   const Home({
     super.key,
     required this.changeTheme,
@@ -16,12 +18,17 @@ class Home extends StatefulWidget {
   final String name;
 
   @override
-  State<Home> createState() => _HomeState();
+  ConsumerState createState() => _HomeState();
 }
 
-class _HomeState extends State<Home> {
-  int tab = 0;
-  FriendProfile? selectedFriend = friends[0];
+class _HomeState extends ConsumerState<Home> {
+  int _selectedIndex = 0;
+
+  // TODO: make selected friend to be sharedprefs and read the sharedprefs in TrackExpense page to edit the expense.friendId field
+  FriendProfile? _selectedFriend;
+
+  static const String prefSelectedIndexKey = 'selectedIndex';
+  static const String prefSelectedFriendKey = 'selectedFriend';
 
   List<NavigationDestination> appBarDestinations = const [
     NavigationDestination(
@@ -41,35 +48,49 @@ class _HomeState extends State<Home> {
     ),
   ];
 
+  void _saveFriend(FriendProfile friend) {
+    final prefs = ref.read(sharedPrefProvider);
+    prefs.setString(prefSelectedFriendKey, friend.id);
+  }
+
+  void _saveCurrentIndex() {
+    final prefs = ref.read(sharedPrefProvider);
+    prefs.setInt(prefSelectedIndexKey, _selectedIndex);
+  }
+
   void _selectFriend(FriendProfile friend) {
+    _saveFriend(friend);
     setState(() {
-      selectedFriend = friend;
-      tab = 0;
+      _selectedFriend = friend;
+      _selectedIndex = 0;
     });
+    _saveCurrentIndex();
   }
 
   @override
   Widget build(BuildContext context) {
     final pages = [
-      BalancePage(name: widget.name, friend: selectedFriend),
+      BalancePage(name: widget.name, friend: _selectedFriend),
       FriendsPage(onFriendSelected: _selectFriend),
       const Center(
         child: Text('Settings'),
       )
     ];
     return Scaffold(
-      resizeToAvoidBottomInset: false, // avoid overflow issue when going back to home page with mobile keyboard opened
+      resizeToAvoidBottomInset: false,
+      // avoid overflow issue when going back to home page with mobile keyboard opened
       appBar: AppBar(
         title: Text(widget.appTitle),
         elevation: 4.0,
       ),
-      body: IndexedStack(index: tab, children: pages),
+      body: IndexedStack(index: _selectedIndex, children: pages),
       bottomNavigationBar: NavigationBar(
-        selectedIndex: tab,
+        selectedIndex: _selectedIndex,
         onDestinationSelected: (index) {
           setState(() {
-            tab = index;
+            _selectedIndex = index;
           });
+          _saveCurrentIndex();
         },
         destinations: appBarDestinations,
       ),

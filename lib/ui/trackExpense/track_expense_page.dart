@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:splitly/providers.dart';
 import 'package:splitly/ui/widgets/buttons/large_button.dart';
 
 import '../../data/models/expense.dart';
 
-class TrackExpense extends StatefulWidget {
+class TrackExpense extends ConsumerStatefulWidget {
   const TrackExpense({super.key, this.expense});
 
   final Expense? expense;
 
   @override
-  State<TrackExpense> createState() => _TrackExpenseState();
+  ConsumerState<TrackExpense> createState() => _TrackExpenseState();
 }
 
-class _TrackExpenseState extends State<TrackExpense> {
+class _TrackExpenseState extends ConsumerState<TrackExpense> {
   final _formKey = GlobalKey<FormState>();
   final Expense expense = Expense();
   bool submitted = false;
@@ -45,6 +47,11 @@ class _TrackExpenseState extends State<TrackExpense> {
   }
 
   void _handleSubmit() {
+    final repository = ref.read(repositoryProvider);
+    final prefs = ref.read(sharedPrefProvider);
+    final currentFriendId = prefs.getString('selectedFriend');
+    final currentFriend = repository.findFriendById(currentFriendId!);
+
     if (_formKey.currentState!.validate()) {
       setState(() {
         submitted = true;
@@ -62,6 +69,8 @@ class _TrackExpenseState extends State<TrackExpense> {
         expense.paidByFriend =
             expense.shouldBePaidByUser + expense.shouldBePaidByFriend;
       }
+
+      expense.friendId = currentFriend.id;
 
       if (widget.expense != null) {
         widget.expense!
