@@ -27,6 +27,16 @@ class Expense {
   // Get the total cost of the expense (sum of what both parties should pay)
   double get totalCost => shouldBePaidByUser + shouldBePaidByFriend;
 
+  double _calculateBalanceForBothPaid() {
+    if (paidByUser > shouldBePaidByUser) {
+      return paidByUser - shouldBePaidByUser;
+    } else if (paidByFriend > shouldBePaidByFriend) {
+      return paidByFriend - shouldBePaidByFriend;
+    } else {
+      return 0.0;
+    }
+  }
+
   // Get the balance adjustment based on who paid
   double get balance {
     if (paidByUser > 0 && paidByFriend == 0) {
@@ -37,8 +47,7 @@ class Expense {
       return -(totalCost - shouldBePaidByFriend);
     } else if (paidByUser > 0 && paidByFriend > 0) {
       // Both contributed, so balance based on the difference between actual and should pay
-      return (paidByUser - shouldBePaidByUser) +
-          (paidByFriend - shouldBePaidByFriend);
+      return _calculateBalanceForBothPaid();
     } else {
       return 0.0; // No payment was made yet
     }
