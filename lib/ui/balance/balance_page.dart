@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:splitly/providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:splitly/ui/balance/components/balance_card.dart';
-import 'package:splitly/data/models/friend_profile.dart';
 import 'package:splitly/ui/trackExpense/track_expense_page.dart';
 import 'package:splitly/ui/widgets/buttons/large_button.dart';
 
@@ -10,11 +9,9 @@ class BalancePage extends ConsumerStatefulWidget {
   const BalancePage({
     super.key,
     required this.name,
-    required this.friend,
   });
 
   final String name;
-  final FriendProfile? friend;
 
   @override
   ConsumerState<BalancePage> createState() => _BalancePageState();
@@ -23,7 +20,9 @@ class BalancePage extends ConsumerStatefulWidget {
 class _BalancePageState extends ConsumerState<BalancePage> {
   @override
   Widget build(BuildContext context) {
-    if (widget.friend == null) {
+    final prefs = ref.watch(sharedPrefProvider);
+    final currentFriendId = prefs.getString('selectedFriend');
+    if (currentFriendId == null) {
       return _buildNoFriendSelected();
     }
     return _buildFriendBalance(context);
@@ -39,12 +38,7 @@ class _BalancePageState extends ConsumerState<BalancePage> {
         const SizedBox(
           height: 100.0,
         ),
-        BalanceCard(
-          friend: widget.friend!,
-          onExpenseDeleted: () {
-            setState(() {});
-          },
-        ),
+        const BalanceCard(),
         const Spacer(),
         _trackExpenseButton(context),
         const SizedBox(
@@ -65,9 +59,6 @@ class _BalancePageState extends ConsumerState<BalancePage> {
 
           if (newExpense != null) {
             repository.insertExpense(newExpense);
-            setState(() {
-              widget.friend!.expenses.add(newExpense);
-            });
           }
         },
         label: 'Track Expense');

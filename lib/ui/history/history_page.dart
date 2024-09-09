@@ -3,27 +3,25 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:splitly/providers.dart';
 import 'package:splitly/ui/history/components/expense_card.dart';
 import 'package:splitly/data/models/expense.dart';
-import 'package:splitly/data/models/friend_profile.dart';
 import 'package:splitly/ui/trackExpense/track_expense_page.dart';
 import 'package:splitly/utils.dart';
 
 class HistoryPage extends ConsumerStatefulWidget {
   const HistoryPage({
     super.key,
-    required this.friend,
   });
-
-  final FriendProfile friend;
 
   @override
   ConsumerState createState() => _HistoryPageState();
 }
 
 class _HistoryPageState extends ConsumerState<HistoryPage> {
-
   void deleteExpense(int index) {
     final repository = ref.watch(repositoryProvider);
-    final List<Expense> expenses = repository.findFriendExpenses(widget.friend.id);
+    final prefs = ref.watch(sharedPrefProvider);
+    final currentFriendId = prefs.getString('selectedFriend');
+    final friend = repository.findFriendById(currentFriendId!);
+    final List<Expense> expenses = repository.findFriendExpenses(friend.id);
     Expense deletedExpense = expenses[index];
     setState(() {
       expenses.removeAt(index);
@@ -38,7 +36,10 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
   @override
   Widget build(BuildContext context) {
     final repository = ref.watch(repositoryProvider);
-    final List<Expense> expenses = repository.findFriendExpenses(widget.friend.id);
+    final prefs = ref.watch(sharedPrefProvider);
+    final currentFriendId = prefs.getString('selectedFriend');
+    final friend = repository.findFriendById(currentFriendId!);
+    final List<Expense> expenses = repository.findFriendExpenses(friend.id);
     return Scaffold(
       appBar: AppBar(title: const Text('Splitly')),
       body: ListView.builder(
@@ -46,14 +47,17 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
         itemBuilder: (context, index) {
           int reverseIndex = expenses.length - index - 1;
           return _buildExpenseItem(reverseIndex);
-          },
+        },
       ),
     );
   }
 
   Dismissible _buildExpenseItem(int index) {
     final repository = ref.watch(repositoryProvider);
-    final List<Expense> expenses = repository.findFriendExpenses(widget.friend.id);
+    final prefs = ref.watch(sharedPrefProvider);
+    final currentFriendId = prefs.getString('selectedFriend');
+    final friend = repository.findFriendById(currentFriendId!);
+    final List<Expense> expenses = repository.findFriendExpenses(friend.id);
     Expense expense = expenses[index];
     return Dismissible(
       key: Key(expense.name),
@@ -102,9 +106,17 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
               style: Theme.of(context).textTheme.titleSmall),
           const SizedBox(height: 4.0),
           Text('Your consumption: ${expense.shouldBePaidByUser}',
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(color: Colors.grey)),
+              style: Theme.of(context)
+                  .textTheme
+                  .titleSmall
+                  ?.copyWith(color: Colors.grey)),
+          Text('You paid: ${expense.paidByUser}'),
           Text('Their consumption: ${expense.shouldBePaidByFriend}',
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(color: Colors.grey)),
+              style: Theme.of(context)
+                  .textTheme
+                  .titleSmall
+                  ?.copyWith(color: Colors.grey)),
+          Text('They paid: ${expense.paidByFriend}'),
           ...?_buildExpenseDetailsDescription(expense),
         ],
       ),
@@ -112,6 +124,10 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
   }
 
   Row _buildExpenseDetailsTitle(Expense expense) {
+    final repository = ref.watch(repositoryProvider);
+    final prefs = ref.watch(sharedPrefProvider);
+    final currentFriendId = prefs.getString('selectedFriend');
+    final friend = repository.findFriendById(currentFriendId!);
     return Row(
       children: [
         Text(
@@ -128,14 +144,13 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
             final editedExpense = await Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) =>
-                      TrackExpense(expense: expense)),
+                  builder: (context) => TrackExpense(expense: expense)),
             );
 
             if (editedExpense != null) {
               setState(() {
-                final index = widget.friend.expenses.indexOf(expense);
-                widget.friend.expenses[index] = editedExpense;
+                final index = friend.expenses.indexOf(expense);
+                friend.expenses[index] = editedExpense;
               });
             }
           },

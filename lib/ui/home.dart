@@ -25,7 +25,6 @@ class _HomeState extends ConsumerState<Home> {
   int _selectedIndex = 0;
 
   // TODO: make selected friend to be sharedprefs and read the sharedprefs in TrackExpense page to edit the expense.friendId field
-  FriendProfile? _selectedFriend;
 
   static const String prefSelectedIndexKey = 'selectedIndex';
   static const String prefSelectedFriendKey = 'selectedFriend';
@@ -61,7 +60,6 @@ class _HomeState extends ConsumerState<Home> {
   void _selectFriend(FriendProfile friend) {
     _saveFriend(friend);
     setState(() {
-      _selectedFriend = friend;
       _selectedIndex = 0;
     });
     _saveCurrentIndex();
@@ -70,7 +68,7 @@ class _HomeState extends ConsumerState<Home> {
   @override
   Widget build(BuildContext context) {
     final pages = [
-      BalancePage(name: widget.name, friend: _selectedFriend),
+      BalancePage(name: widget.name),
       FriendsPage(onFriendSelected: _selectFriend),
       const Center(
         child: Text('Settings'),
