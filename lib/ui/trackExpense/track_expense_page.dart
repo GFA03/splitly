@@ -16,31 +16,40 @@ class TrackExpense extends ConsumerStatefulWidget {
 
 class _TrackExpenseState extends ConsumerState<TrackExpense> {
   final _formKey = GlobalKey<FormState>();
-  final Expense expense = Expense();
-  bool submitted = false;
+
+  // Separate variables for each form field
+  String? _name;
+  String? _description;
+  DateTime? _date;
+  double? _shouldBePaidByUser;
+  double? _shouldBePaidByFriend;
+  double _paidByUser = 0.0;
+  double _paidByFriend = 0.0;
 
   PaymentOptions paymentView = PaymentOptions.you;
+  bool submitted = false;
 
   @override
   void initState() {
     super.initState();
     if (widget.expense != null) {
-      expense
-        ..name = widget.expense!.name
-        ..shouldBePaidByUser = widget.expense!.shouldBePaidByUser
-        ..shouldBePaidByFriend = widget.expense!.shouldBePaidByFriend
-        ..paidByUser = widget.expense!.paidByUser
-        ..paidByFriend = widget.expense!.paidByFriend
-        ..description = widget.expense!.description
-        ..date = widget.expense!.date;
+      _name = widget.expense!.name;
+      _description = widget.expense!.description;
+      _date = widget.expense!.date;
+      _shouldBePaidByUser = widget.expense!.shouldBePaidByUser;
+      _shouldBePaidByFriend = widget.expense!.shouldBePaidByFriend;
+      _paidByUser = widget.expense!.paidByUser;
+      _paidByFriend = widget.expense!.paidByFriend;
       paymentView = _determinePaymentSelection();
+    } else {
+      _date = DateTime.now(); // Default to current date if adding a new expense
     }
   }
 
   PaymentOptions _determinePaymentSelection() {
-    if (expense.paidByUser > 0 && expense.paidByFriend > 0) {
+    if (_paidByUser > 0 && _paidByFriend > 0) {
       return PaymentOptions.both;
-    } else if (expense.paidByFriend > 0) {
+    } else if (_paidByFriend > 0) {
       return PaymentOptions.them;
     }
     return PaymentOptions.you;
@@ -59,31 +68,39 @@ class _TrackExpenseState extends ConsumerState<TrackExpense> {
 
       _formKey.currentState!.save();
 
-      if (expense.description != null && expense.description!.isEmpty) {
-        expense.description = null;
-      }
-      if (paymentView == PaymentOptions.you) {
-        expense.paidByUser =
-            expense.shouldBePaidByUser + expense.shouldBePaidByFriend;
-      } else if (paymentView == PaymentOptions.them) {
-        expense.paidByFriend =
-            expense.shouldBePaidByUser + expense.shouldBePaidByFriend;
+      if (_description != null && _description!.isEmpty) {
+        _description = null;
       }
 
-      expense.friendId = currentFriend.id;
+      final newExpense = Expense(
+        name: _name!,
+        description: _description,
+        date: _date,
+        shouldBePaidByUser: _shouldBePaidByUser!,
+        shouldBePaidByFriend: _shouldBePaidByFriend!,
+        paidByUser: paymentView == PaymentOptions.you
+            ? _shouldBePaidByUser! + _shouldBePaidByFriend!
+            : _paidByUser,
+        paidByFriend: paymentView == PaymentOptions.them
+            ? _shouldBePaidByUser! + _shouldBePaidByFriend!
+            : _paidByFriend,
+        friendId: currentFriend.id,
+      );
 
       if (widget.expense != null) {
+        // If editing, update the existing expense object
         widget.expense!
-          ..name = expense.name
-          ..shouldBePaidByUser = expense.shouldBePaidByUser
-          ..shouldBePaidByFriend = expense.shouldBePaidByFriend
-          ..paidByUser = expense.paidByUser
-          ..paidByFriend = expense.paidByFriend
-          ..description = expense.description
-          ..date = expense.date;
+          ..name = newExpense.name
+          ..shouldBePaidByUser = newExpense.shouldBePaidByUser
+          ..shouldBePaidByFriend = newExpense.shouldBePaidByFriend
+          ..paidByUser = newExpense.paidByUser
+          ..paidByFriend = newExpense.paidByFriend
+          ..description = newExpense.description
+          ..date = newExpense.date;
         Navigator.pop(context, widget.expense);
       } else {
-        Navigator.pop(context, expense);
+        // If new, return the new expense object
+        Navigator.pop(context, newExpense);
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -111,12 +128,13 @@ class _TrackExpenseState extends ConsumerState<TrackExpense> {
                 children: [
                   const SizedBox(height: 20),
                   ExpenseDetailsSection(
-                    expense: expense,
+                    name: _name,
+                    description: _description,
+                    date: _date,
                     submitted: submitted,
-                    onNameSaved: (value) => expense.name = value!,
-                    onDescriptionSaved: (value) => expense.description = value,
-                    onDateSelected: (date) =>
-                        setState(() => expense.date = date),
+                    onNameSaved: (value) => _name = value!,
+                    onDescriptionSaved: (value) => _description = value,
+                    onDateSelected: (date) => setState(() => _date = date),
                   ),
                   const SizedBox(height: 20),
                   PaymentChoice(
@@ -129,22 +147,24 @@ class _TrackExpenseState extends ConsumerState<TrackExpense> {
                   ),
                   const SizedBox(height: 20),
                   ShouldBePaidSection(
-                    expense: expense,
+                    shouldBePaidByUser: _shouldBePaidByUser,
+                    shouldBePaidByFriend: _shouldBePaidByFriend,
                     submitted: submitted,
                     onSavedShouldBePaidByUser: (value) =>
-                        expense.shouldBePaidByUser = double.parse(value ?? '0'),
-                    onSavedShouldBePaidByFriend: (value) => expense
-                        .shouldBePaidByFriend = double.parse(value ?? '0'),
+                    _shouldBePaidByUser = double.parse(value ?? '0'),
+                    onSavedShouldBePaidByFriend: (value) =>
+                    _shouldBePaidByFriend = double.parse(value ?? '0'),
                   ),
                   const SizedBox(height: 20),
                   PaidAmountsSection(
-                    expense: expense,
+                    paidByUser: _paidByUser,
+                    paidByFriend: _paidByFriend,
                     paymentView: paymentView,
                     submitted: submitted,
                     onSavedPaidByUser: (value) =>
-                        expense.paidByUser = double.parse(value ?? '0'),
+                    _paidByUser = double.parse(value ?? '0'),
                     onSavedPaidByFriend: (value) =>
-                        expense.paidByFriend = double.parse(value ?? '0'),
+                    _paidByFriend = double.parse(value ?? '0'),
                   ),
                   const SizedBox(height: 50),
                   LargeButton(onPressed: _handleSubmit, label: 'Submit')
@@ -162,14 +182,18 @@ class _TrackExpenseState extends ConsumerState<TrackExpense> {
 class ExpenseDetailsSection extends StatelessWidget {
   const ExpenseDetailsSection({
     super.key,
-    required this.expense,
+    required this.name,
+    required this.description,
+    required this.date,
     required this.submitted,
     required this.onNameSaved,
     required this.onDescriptionSaved,
     required this.onDateSelected,
   });
 
-  final Expense expense;
+  final String? name;
+  final String? description;
+  final DateTime? date;
   final bool submitted;
   final void Function(String?) onNameSaved;
   final void Function(String?) onDescriptionSaved;
@@ -181,7 +205,7 @@ class ExpenseDetailsSection extends StatelessWidget {
       children: [
         ExpenseInputField(
           label: 'Expense name',
-          initialValue: expense.name,
+          initialValue: name,
           enabled: !submitted,
           onSaved: onNameSaved,
           validator: (value) =>
@@ -189,13 +213,13 @@ class ExpenseDetailsSection extends StatelessWidget {
         ),
         const SizedBox(height: 20),
         ExpenseDatePicker(
-          selectedDate: expense.date,
+          selectedDate: date!,
           onDateSelected: onDateSelected,
         ),
         const SizedBox(height: 20),
         ExpenseInputField(
           label: 'Description (optional)',
-          initialValue: expense.description,
+          initialValue: description,
           enabled: !submitted,
           onSaved: onDescriptionSaved,
           keyboardType: TextInputType.multiline,
@@ -209,13 +233,15 @@ class ExpenseDetailsSection extends StatelessWidget {
 class ShouldBePaidSection extends StatelessWidget {
   const ShouldBePaidSection({
     super.key,
-    required this.expense,
+    required this.shouldBePaidByUser,
+    required this.shouldBePaidByFriend,
     required this.submitted,
     required this.onSavedShouldBePaidByUser,
     required this.onSavedShouldBePaidByFriend,
   });
 
-  final Expense expense;
+  final double? shouldBePaidByUser;
+  final double? shouldBePaidByFriend;
   final bool submitted;
   final void Function(String?) onSavedShouldBePaidByUser;
   final void Function(String?) onSavedShouldBePaidByFriend;
@@ -227,7 +253,6 @@ class ShouldBePaidSection extends StatelessWidget {
       children: [
         ExpenseInputField(
           label: 'Should be paid by you',
-          initialValue: expense.shouldBePaidByUser.toString(),
           enabled: !submitted,
           onSaved: onSavedShouldBePaidByUser,
           keyboardType: TextInputType.number,
@@ -238,7 +263,6 @@ class ShouldBePaidSection extends StatelessWidget {
         const SizedBox(height: 20),
         ExpenseInputField(
           label: 'Should be paid by them',
-          initialValue: expense.shouldBePaidByFriend.toString(),
           enabled: !submitted,
           onSaved: onSavedShouldBePaidByFriend,
           keyboardType: TextInputType.number,
@@ -257,14 +281,16 @@ enum PaymentOptions { you, both, them }
 class PaidAmountsSection extends StatelessWidget {
   const PaidAmountsSection({
     super.key,
-    required this.expense,
+    required this.paidByUser,
+    required this.paidByFriend,
     required this.paymentView,
     required this.submitted,
     required this.onSavedPaidByUser,
     required this.onSavedPaidByFriend,
   });
 
-  final Expense expense;
+  final double? paidByUser;
+  final double? paidByFriend;
   final PaymentOptions paymentView;
   final bool submitted;
   final void Function(String?) onSavedPaidByUser;
@@ -278,7 +304,6 @@ class PaidAmountsSection extends StatelessWidget {
         children: [
           ExpenseInputField(
             label: 'How much have you paid?',
-            initialValue: expense.paidByUser.toString(),
             enabled: !submitted,
             onSaved: onSavedPaidByUser,
             keyboardType: TextInputType.number,
@@ -289,7 +314,6 @@ class PaidAmountsSection extends StatelessWidget {
           const SizedBox(height: 20),
           ExpenseInputField(
             label: 'How much have they paid?',
-            initialValue: expense.paidByFriend.toString(),
             enabled: !submitted,
             onSaved: onSavedPaidByFriend,
             keyboardType: TextInputType.number,
@@ -309,7 +333,7 @@ class ExpenseInputField extends StatelessWidget {
   const ExpenseInputField({
     super.key,
     required this.label,
-    required this.initialValue,
+    this.initialValue,
     required this.enabled,
     required this.onSaved,
     this.keyboardType = TextInputType.text,
@@ -330,7 +354,7 @@ class ExpenseInputField extends StatelessWidget {
         labelText: label,
         labelStyle: const TextStyle(color: Colors.purple),
       ),
-      initialValue: initialValue,
+      initialValue: initialValue ?? "",
       enabled: enabled,
       keyboardType: keyboardType,
       validator: validator,
