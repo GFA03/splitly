@@ -26,7 +26,7 @@ class FriendCard extends StatelessWidget {
   Row _buildFriendInfo(BuildContext context) {
     return Row(
       children: [
-        CircleAvatar(backgroundImage: AssetImage(friend.imageUrl), radius: 25),
+        CircleAvatar(backgroundImage: AssetImage(friend.imageUrl ?? 'assets/profile_pics/profile_picture6.jpg'), radius: 25),
         const SizedBox(width: 15.0),
         Text(friend.name),
         const Spacer(),

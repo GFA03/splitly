@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:splitly/data/models/friend_profile.dart';
 
+String NO_PROFILE_PICTURE = 'assets/profile_pics/profile_picture6.jpg';
+
 class ProfileCard extends StatelessWidget {
   const ProfileCard({
     super.key,
@@ -22,7 +24,7 @@ class ProfileCard extends StatelessWidget {
         children: [
           const SizedBox(height: 10,),
           CircleAvatar(
-            backgroundImage: AssetImage(profile.imageUrl),
+            backgroundImage: AssetImage(profile.imageUrl ?? NO_PROFILE_PICTURE),
             radius: 40,
           ),
           const SizedBox(height: 10,),

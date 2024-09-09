@@ -48,7 +48,7 @@ class _FriendsPageState extends State<FriendsPage> {
   void _addFriend(String? newFriendName) {
     if (newFriendName != null && newFriendName.isNotEmpty) {
       setState(() {
-        persons.add(FriendProfile(newFriendName, defaultProfileImage));
+        persons.add(FriendProfile(name: newFriendName, imageUrl: defaultProfileImage));
       });
       showSnackBar(context, '$newFriendName added');
       Navigator.of(context).pop();

@@ -43,7 +43,8 @@ class _BalanceCardState extends State<BalanceCard> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        ProfileCard(profile: FriendProfile('You', profileImage)),
+        ProfileCard(
+            profile: FriendProfile(name: 'You', imageUrl: profileImage)),
         // TODO: add currency option (and you should call an API to convert the selected currency to the settings selected currency
         Text(
           'Balance: $balance\$',
@@ -96,8 +97,10 @@ class _BalanceCardState extends State<BalanceCard> {
                 setState(() {});
               }
             },
-            child: const Text('See all history',
-            style: TextStyle(decoration: TextDecoration.underline),)),
+            child: const Text(
+              'See all history',
+              style: TextStyle(decoration: TextDecoration.underline),
+            )),
       ],
     );
   }

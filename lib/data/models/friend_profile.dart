@@ -1,19 +1,20 @@
 import 'package:splitly/data/models/expense.dart';
+import 'package:uuid/uuid.dart';
 
 class FriendProfile {
-  FriendProfile(this._name, this.imageUrl);
+  FriendProfile({String? id, required this.name, this.imageUrl})
+      : id = id ?? const Uuid().v4();
 
-  String _name;
-  String imageUrl;
+  final String id;
+  String name;
+  String? imageUrl;
   List<Expense> expenses = expensesTest;
 
-  String get name => _name;
-
-  set name(String newName) {
+  set setName(String newName) {
     if (newName.isEmpty) {
       throw ArgumentError('Name cannot be empty');
     }
-    _name = newName;
+    name = newName;
   }
 
   double calculateBalance() {
@@ -21,16 +22,14 @@ class FriendProfile {
       return 0;
     }
     return expenses.fold<double>(
-        0,
-        (previousValue, element) =>
-            previousValue + element.balance);
+        0, (previousValue, element) => previousValue + element.balance);
   }
 }
 
 List<FriendProfile> friends = [
-  FriendProfile('Alex Gavrila', 'assets/profile_pics/profile_picture2.jpg'),
-  FriendProfile('James Rodriguez', 'assets/profile_pics/profile_picture3.jpg'),
-  FriendProfile('Layla Ponta', 'assets/profile_pics/profile_picture4.jpg'),
-  FriendProfile('Crezulo Davinci', 'assets/profile_pics/profile_picture5.jpg'),
-  FriendProfile('John Doe', 'assets/profile_pics/profile_picture6.jpg'),
+  FriendProfile(name: 'Alex Gavrila', imageUrl: 'assets/profile_pics/profile_picture2.jpg'),
+  FriendProfile(name: 'James Rodriguez', imageUrl:  'assets/profile_pics/profile_picture3.jpg'),
+  FriendProfile(name: 'Layla Ponta', imageUrl: 'assets/profile_pics/profile_picture4.jpg'),
+  FriendProfile(name: 'Crezulo Davinci', imageUrl: 'assets/profile_pics/profile_picture5.jpg'),
+  FriendProfile(name: 'John Doe', imageUrl: 'assets/profile_pics/profile_picture6.jpg'),
 ];
