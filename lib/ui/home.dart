@@ -4,6 +4,7 @@ import 'package:splitly/data/models/friend_profile.dart';
 import 'package:splitly/providers.dart';
 import 'package:splitly/ui/balance/balance_page.dart';
 import 'package:splitly/ui/friends/friends_page.dart';
+import 'package:splitly/ui/settings/settings_page.dart';
 
 class Home extends ConsumerStatefulWidget {
   const Home({
@@ -70,9 +71,7 @@ class _HomeState extends ConsumerState<Home> {
     final pages = [
       BalancePage(name: widget.name),
       FriendsPage(onFriendSelected: _selectFriend),
-      const Center(
-        child: Text('Settings'),
-      )
+      const SettingsPage(),
     ];
     return Scaffold(
       resizeToAvoidBottomInset: false,
