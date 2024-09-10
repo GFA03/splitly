@@ -22,7 +22,7 @@ class _BalanceCardState extends ConsumerState<BalanceCard> {
     final prefs = ref.watch(sharedPrefProvider);
     final currentFriendId = prefs.getString('selectedFriend');
     final friend = repository.findFriendById(currentFriendId!);
-    final balance = friend.calculateBalance();
+    final balance = friend.calculateBalance(repository);
     final balanceColor = balance >= 0 ? Colors.green : Colors.red;
 
     return Card(
@@ -30,17 +30,21 @@ class _BalanceCardState extends ConsumerState<BalanceCard> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            _buildProfileRow(friend, profileImage, balance, balanceColor),
+            _buildProfileRow(profileImage, balance, balanceColor),
             const SizedBox(height: 20.0),
-            _buildExpenseDetails(friend),
+            _buildExpenseDetails(),
           ],
         ),
       ),
     );
   }
 
-  Row _buildProfileRow(FriendProfile friend, String profileImage,
+  Row _buildProfileRow(String profileImage,
       double balance, MaterialColor balanceColor) {
+    final repository = ref.watch(repositoryProvider);
+    final prefs = ref.watch(sharedPrefProvider);
+    final currentFriendId = prefs.getString('selectedFriend');
+    final friend = repository.findFriendById(currentFriendId!);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
@@ -59,8 +63,13 @@ class _BalanceCardState extends ConsumerState<BalanceCard> {
     );
   }
 
-  Widget _buildExpenseDetails(FriendProfile friend) {
-    if (friend.expenses.isEmpty) {
+  Widget _buildExpenseDetails() {
+    final repository = ref.watch(repositoryProvider);
+    final prefs = ref.watch(sharedPrefProvider);
+    final currentFriendId = prefs.getString('selectedFriend');
+    final friend = repository.findFriendById(currentFriendId!);
+    final expenses = repository.findFriendExpenses(currentFriendId);
+    if (expenses.isEmpty) {
       return _buildNoExpensesCard();
     }
     return _buildHistoryCard(friend);
@@ -71,7 +80,11 @@ class _BalanceCardState extends ConsumerState<BalanceCard> {
   }
 
   Widget _buildHistoryCard(FriendProfile friend) {
-    final lastExpense = friend.expenses.last;
+    final repository = ref.watch(repositoryProvider);
+    final prefs = ref.watch(sharedPrefProvider);
+    final currentFriendID = prefs.getString('selectedFriend');
+    final friendExpenses = repository.findFriendExpenses(currentFriendID!);
+    final lastExpense = friendExpenses.last;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [

@@ -17,6 +17,8 @@ abstract class Repository {
 
   void editFriendName(FriendProfile friend, String newName);
 
+  void editExpense(Expense oldExpense, Expense newExpense);
+
   void deleteFriend(FriendProfile friend);
 
   void deleteExpense(Expense expense);

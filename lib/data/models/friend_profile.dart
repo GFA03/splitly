@@ -1,5 +1,6 @@
-import 'package:splitly/data/models/expense.dart';
 import 'package:uuid/uuid.dart';
+
+import '../repositories/repository.dart';
 
 class FriendProfile {
   FriendProfile({String? id, required this.name, this.imageUrl})
@@ -8,7 +9,6 @@ class FriendProfile {
   final String id;
   String name;
   String? imageUrl;
-  List<Expense> expenses = [];
 
   set setName(String newName) {
     if (newName.isEmpty) {
@@ -17,7 +17,8 @@ class FriendProfile {
     name = newName;
   }
 
-  double calculateBalance() {
+  double calculateBalance(Repository repository) {
+    final expenses = repository.findFriendExpenses(id);
     if (expenses.isEmpty) {
       return 0;
     }

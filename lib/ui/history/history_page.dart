@@ -23,9 +23,6 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
     final friend = repository.findFriendById(currentFriendId!);
     final List<Expense> expenses = repository.findFriendExpenses(friend.id);
     Expense deletedExpense = expenses[index];
-    setState(() {
-      expenses.removeAt(index);
-    });
     repository.deleteExpense(expenses[index]);
 
     showSnackBar(context, '${deletedExpense.name} deleted', 'Undo', () {
@@ -60,7 +57,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
     final List<Expense> expenses = repository.findFriendExpenses(friend.id);
     Expense expense = expenses[index];
     return Dismissible(
-      key: Key(expense.name),
+      key: Key(expense.id),
       direction: DismissDirection.endToStart,
       onDismissed: (_) {
         deleteExpense(index);
@@ -124,10 +121,6 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
   }
 
   Row _buildExpenseDetailsTitle(Expense expense) {
-    final repository = ref.watch(repositoryProvider);
-    final prefs = ref.watch(sharedPrefProvider);
-    final currentFriendId = prefs.getString('selectedFriend');
-    final friend = repository.findFriendById(currentFriendId!);
     return Row(
       children: [
         Text(
@@ -140,6 +133,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
         const Spacer(),
         IconButton(
           onPressed: () async {
+            final repository = ref.watch(repositoryProvider);
             Navigator.pop(context);
             final editedExpense = await Navigator.push(
               context,
@@ -148,10 +142,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
             );
 
             if (editedExpense != null) {
-              setState(() {
-                final index = friend.expenses.indexOf(expense);
-                friend.expenses[index] = editedExpense;
-              });
+              repository.editExpense(expense, editedExpense);
             }
           },
           icon: Icon(
