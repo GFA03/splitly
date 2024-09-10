@@ -5,6 +5,7 @@ import 'package:splitly/ui/history/components/expense_card.dart';
 import 'package:splitly/data/models/expense.dart';
 import 'package:splitly/ui/trackExpense/track_expense_page.dart';
 import 'package:splitly/utils.dart';
+import 'package:splitly/utils/friend_utils.dart';
 
 class HistoryPage extends ConsumerStatefulWidget {
   const HistoryPage({
@@ -18,13 +19,9 @@ class HistoryPage extends ConsumerStatefulWidget {
 class _HistoryPageState extends ConsumerState<HistoryPage> {
   void deleteExpense(int index) {
     final repository = ref.watch(repositoryProvider);
-    final prefs = ref.watch(sharedPrefProvider);
-    final currentFriendId = prefs.getString('selectedFriend');
-    final friend = repository.findFriendById(currentFriendId!);
-    final List<Expense> expenses = repository.findFriendExpenses(friend.id);
+    final expenses = FriendUtils.getSelectedFriendExpenses(ref);
     Expense deletedExpense = expenses[index];
     repository.deleteExpense(expenses[index]);
-
     showSnackBar(context, '${deletedExpense.name} deleted', 'Undo', () {
       repository.insertExpense(deletedExpense);
     });
@@ -32,11 +29,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
 
   @override
   Widget build(BuildContext context) {
-    final repository = ref.watch(repositoryProvider);
-    final prefs = ref.watch(sharedPrefProvider);
-    final currentFriendId = prefs.getString('selectedFriend');
-    final friend = repository.findFriendById(currentFriendId!);
-    final List<Expense> expenses = repository.findFriendExpenses(friend.id);
+    final expenses = FriendUtils.getSelectedFriendExpenses(ref);
     return Scaffold(
       appBar: AppBar(title: const Text('Splitly')),
       body: ListView.builder(
@@ -50,11 +43,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
   }
 
   Dismissible _buildExpenseItem(int index) {
-    final repository = ref.watch(repositoryProvider);
-    final prefs = ref.watch(sharedPrefProvider);
-    final currentFriendId = prefs.getString('selectedFriend');
-    final friend = repository.findFriendById(currentFriendId!);
-    final List<Expense> expenses = repository.findFriendExpenses(friend.id);
+    final expenses = FriendUtils.getSelectedFriendExpenses(ref);
     Expense expense = expenses[index];
     return Dismissible(
       key: Key(expense.id),
@@ -66,7 +55,6 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
       child: GestureDetector(
         onTap: () => _showExpenseDetails(expense),
         child: ExpenseCard(expense: expense),
-        // child: Container(),
       ),
     );
   }

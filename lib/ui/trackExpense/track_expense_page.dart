@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:splitly/providers.dart';
 import 'package:splitly/ui/widgets/buttons/large_button.dart';
+import 'package:splitly/utils/friend_utils.dart';
 
 import '../../data/models/expense.dart';
 
@@ -56,10 +56,7 @@ class _TrackExpenseState extends ConsumerState<TrackExpense> {
   }
 
   void _handleSubmit() {
-    final repository = ref.read(repositoryProvider);
-    final prefs = ref.read(sharedPrefProvider);
-    final currentFriendId = prefs.getString('selectedFriend');
-    final currentFriend = repository.findFriendById(currentFriendId!);
+    final selectedFriend = FriendUtils.getSelectedFriend(ref);
 
     if (_formKey.currentState!.validate()) {
       setState(() {
@@ -120,7 +117,7 @@ class _TrackExpenseState extends ConsumerState<TrackExpense> {
           paidByFriend: paymentView == PaymentOptions.them
               ? _shouldBePaidByUser! + _shouldBePaidByFriend!
               : _paidByFriend,
-          friendId: currentFriend.id,
+          friendId: selectedFriend.id,
         );
         Navigator.pop(context, newExpense);
       }

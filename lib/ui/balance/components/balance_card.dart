@@ -4,6 +4,7 @@ import 'package:splitly/data/models/friend_profile.dart';
 import 'package:splitly/providers.dart';
 import 'package:splitly/ui/balance/components/profile_card.dart';
 import 'package:splitly/ui/history/history_page.dart';
+import 'package:splitly/utils/friend_utils.dart';
 
 class BalanceCard extends ConsumerStatefulWidget {
   const BalanceCard({
@@ -19,9 +20,7 @@ class _BalanceCardState extends ConsumerState<BalanceCard> {
   Widget build(BuildContext context) {
     String profileImage = 'assets/profile_pics/profile_picture1.jpg';
     final repository = ref.watch(repositoryProvider);
-    final prefs = ref.watch(sharedPrefProvider);
-    final currentFriendId = prefs.getString('selectedFriend');
-    final friend = repository.findFriendById(currentFriendId!);
+    final friend = FriendUtils.getSelectedFriend(ref);
     final balance = friend.calculateBalance(repository);
     final balanceColor = balance >= 0 ? Colors.green : Colors.red;
 
@@ -41,10 +40,7 @@ class _BalanceCardState extends ConsumerState<BalanceCard> {
 
   Row _buildProfileRow(String profileImage,
       double balance, MaterialColor balanceColor) {
-    final repository = ref.watch(repositoryProvider);
-    final prefs = ref.watch(sharedPrefProvider);
-    final currentFriendId = prefs.getString('selectedFriend');
-    final friend = repository.findFriendById(currentFriendId!);
+    final friend = FriendUtils.getSelectedFriend(ref);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
@@ -64,26 +60,19 @@ class _BalanceCardState extends ConsumerState<BalanceCard> {
   }
 
   Widget _buildExpenseDetails() {
-    final repository = ref.watch(repositoryProvider);
-    final prefs = ref.watch(sharedPrefProvider);
-    final currentFriendId = prefs.getString('selectedFriend');
-    final friend = repository.findFriendById(currentFriendId!);
-    final expenses = repository.findFriendExpenses(currentFriendId);
+    final expenses = FriendUtils.getSelectedFriendExpenses(ref);
     if (expenses.isEmpty) {
       return _buildNoExpensesCard();
     }
-    return _buildHistoryCard(friend);
+    return _buildHistoryCard();
   }
 
   Widget _buildNoExpensesCard() {
     return const Text('There are no expenses yet!');
   }
 
-  Widget _buildHistoryCard(FriendProfile friend) {
-    final repository = ref.watch(repositoryProvider);
-    final prefs = ref.watch(sharedPrefProvider);
-    final currentFriendID = prefs.getString('selectedFriend');
-    final friendExpenses = repository.findFriendExpenses(currentFriendID!);
+  Widget _buildHistoryCard() {
+    final friendExpenses = FriendUtils.getSelectedFriendExpenses(ref);
     final lastExpense = friendExpenses.last;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
