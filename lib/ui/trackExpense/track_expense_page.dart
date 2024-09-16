@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:splitly/providers.dart';
 import 'package:splitly/ui/widgets/buttons/large_button.dart';
-import 'package:splitly/utils/friend_utils.dart';
 import 'package:splitly/data/models/expense.dart';
 
 import 'components/expense_details_section.dart';
@@ -10,7 +10,7 @@ import 'components/payment_choice.dart';
 import 'components/should_be_paid_section.dart';
 
 enum PaymentOptions { you, both, them }
-
+//todo: remove payment options (because it is self inferred by looking at how much each party has paid), and add a slider for Should be paid and for How much have you paid + a field for Total Cost Price
 class TrackExpense extends ConsumerStatefulWidget {
   const TrackExpense({super.key, this.expense});
 
@@ -38,14 +38,15 @@ class _TrackExpenseState extends ConsumerState<TrackExpense> {
   @override
   void initState() {
     super.initState();
-    if (widget.expense != null) {
-      _name = widget.expense!.name;
-      _description = widget.expense!.description;
-      _date = widget.expense!.date;
-      _shouldBePaidByUser = widget.expense!.shouldBePaidByUser;
-      _shouldBePaidByFriend = widget.expense!.shouldBePaidByFriend;
-      _paidByUser = widget.expense!.paidByUser;
-      _paidByFriend = widget.expense!.paidByFriend;
+    Expense? expense = widget.expense;
+    if (expense != null) {
+      _name = expense.name;
+      _description = expense.description;
+      _date = expense.date;
+      _shouldBePaidByUser = expense.shouldBePaidByUser;
+      _shouldBePaidByFriend = expense.shouldBePaidByFriend;
+      _paidByUser = expense.paidByUser;
+      _paidByFriend = expense.paidByFriend;
       paymentView = _determinePaymentSelection();
     } else {
       _date = DateTime.now(); // Default to current date if adding a new expense
@@ -62,7 +63,11 @@ class _TrackExpenseState extends ConsumerState<TrackExpense> {
   }
 
   void _handleSubmit() {
-    final selectedFriend = FriendUtils.getSelectedFriend(ref);
+    final selectedFriend = ref.read(repositoryProvider).selectedFriend;
+
+    if (selectedFriend == null) {
+      throw ArgumentError("There is no friend selected!");
+    }
 
     if (_formKey.currentState!.validate()) {
       setState(() {

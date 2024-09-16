@@ -1,8 +1,8 @@
-// Widget for the "Should be paid" fields
 import 'package:flutter/material.dart';
 
 import 'expense_input_field.dart';
 
+// Widget for the "Should be paid" fields
 class ShouldBePaidSection extends StatelessWidget {
   const ShouldBePaidSection({
     super.key,

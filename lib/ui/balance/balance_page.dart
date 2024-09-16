@@ -20,8 +20,7 @@ class BalancePage extends ConsumerStatefulWidget {
 class _BalancePageState extends ConsumerState<BalancePage> {
   @override
   Widget build(BuildContext context) {
-    final prefs = ref.watch(sharedPrefProvider);
-    final currentFriendId = prefs.getString('selectedFriend');
+    final currentFriendId = ref.watch(repositoryProvider).selectedFriend;
     if (currentFriendId == null) {
       return _buildNoFriendSelected();
     }
@@ -51,14 +50,13 @@ class _BalancePageState extends ConsumerState<BalancePage> {
   LargeButton _trackExpenseButton(BuildContext context) {
     return LargeButton(
         onPressed: () async {
-          final repository = ref.watch(repositoryProvider);
           final newExpense = await Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const TrackExpense()),
           );
 
           if (newExpense != null) {
-            repository.insertExpense(newExpense);
+            ref.read(repositoryProvider.notifier).insertExpense(newExpense);
           }
         },
         label: 'Track Expense');

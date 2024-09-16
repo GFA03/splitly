@@ -5,7 +5,6 @@ import 'package:splitly/ui/history/components/expense_card.dart';
 import 'package:splitly/data/models/expense.dart';
 import 'package:splitly/ui/trackExpense/track_expense_page.dart';
 import 'package:splitly/utils.dart';
-import 'package:splitly/utils/friend_utils.dart';
 
 class HistoryPage extends ConsumerStatefulWidget {
   const HistoryPage({
@@ -18,8 +17,12 @@ class HistoryPage extends ConsumerStatefulWidget {
 
 class _HistoryPageState extends ConsumerState<HistoryPage> {
   void deleteExpense(int index) {
-    final repository = ref.watch(repositoryProvider);
-    final expenses = FriendUtils.getSelectedFriendExpenses(ref);
+    final repository = ref.read(repositoryProvider.notifier);
+    final currentFriendData = ref.read(repositoryProvider);
+    final expenses = currentFriendData.selectedFriendExpenses;
+
+    if (expenses.isEmpty) return;
+
     Expense deletedExpense = expenses[index];
     repository.deleteExpense(expenses[index]);
     showSnackBar(context, '${deletedExpense.name} deleted', 'Undo', () {
@@ -29,21 +32,29 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
 
   @override
   Widget build(BuildContext context) {
-    final expenses = FriendUtils.getSelectedFriendExpenses(ref);
+    final currentFriendData = ref.watch(repositoryProvider);
+
+    if (currentFriendData.selectedFriend == null) {
+      return const Scaffold(
+        body: Center(child: Text('No friend selected')),
+      );
+    }
+
+    final expenses = currentFriendData.selectedFriendExpenses;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Splitly')),
       body: ListView.builder(
         itemCount: expenses.length,
         itemBuilder: (context, index) {
           int reverseIndex = expenses.length - index - 1;
-          return _buildExpenseItem(reverseIndex);
+          return _buildExpenseItem(reverseIndex, expenses);
         },
       ),
     );
   }
 
-  Dismissible _buildExpenseItem(int index) {
-    final expenses = FriendUtils.getSelectedFriendExpenses(ref);
+  Dismissible _buildExpenseItem(int index, List<Expense> expenses) {
     Expense expense = expenses[index];
     return Dismissible(
       key: Key(expense.id),
@@ -121,7 +132,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
         const Spacer(),
         IconButton(
           onPressed: () async {
-            final repository = ref.watch(repositoryProvider);
+            final repository = ref.read(repositoryProvider.notifier);
             Navigator.pop(context);
             final editedExpense = await Navigator.push(
               context,

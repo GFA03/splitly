@@ -11,6 +11,8 @@ abstract class Repository {
 
   List<Expense> findFriendExpenses(String friendId);
 
+  void selectFriend(FriendProfile friend);
+
   int insertFriend(FriendProfile friend);
 
   int insertExpense(Expense expense);

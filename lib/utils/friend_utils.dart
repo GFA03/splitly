@@ -5,33 +5,23 @@ import 'package:splitly/providers.dart';
 
 class FriendUtils {
   // Function to retrieve the selected friend from the repository
-  static FriendProfile getSelectedFriend(WidgetRef ref) {
-    final repository = ref.watch(repositoryProvider);
-    final prefs = ref.watch(sharedPrefProvider);
-    final currentFriendId = prefs.getString('selectedFriend');
-
-    if (currentFriendId == null) {
-      throw Exception("No selected friend found");
-    }
-
-    return repository.findFriendById(currentFriendId);
+  static FriendProfile? getSelectedFriend(WidgetRef ref) {
+    return ref.watch(repositoryProvider).selectedFriend;
   }
 
-  // Function to fetch the friend ID
   static String getSelectedFriendId(WidgetRef ref) {
-    final prefs = ref.watch(sharedPrefProvider);
-    final currentFriendId = prefs.getString('selectedFriend');
+    final selectedFriend = ref.watch(repositoryProvider).selectedFriend;
 
-    if (currentFriendId == null) {
+    if (selectedFriend == null) {
       throw Exception("No selected friend ID found");
     }
 
-    return currentFriendId;
+    return selectedFriend.id;
   }
 
   // Function to fetch current friend expenses
   static List<Expense> getSelectedFriendExpenses(WidgetRef ref) {
-    final repository = ref.watch(repositoryProvider);
+    final repository = ref.read(repositoryProvider.notifier);
     String friendId = getSelectedFriendId(ref);
 
     return repository.findFriendExpenses(friendId);

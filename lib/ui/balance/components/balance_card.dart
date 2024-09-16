@@ -6,22 +6,22 @@ import 'package:splitly/ui/balance/components/profile_card.dart';
 import 'package:splitly/ui/history/history_page.dart';
 import 'package:splitly/utils/friend_utils.dart';
 
-class BalanceCard extends ConsumerStatefulWidget {
+class BalanceCard extends ConsumerWidget {
   const BalanceCard({
     super.key,
   });
 
   @override
-  ConsumerState<BalanceCard> createState() => _BalanceCardState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Watch the repository state (which contains friends and expenses)
+    final currentFriendData = ref.watch(repositoryProvider); // Watching the state
+    final selectedFriend = currentFriendData.selectedFriend;
 
-class _BalanceCardState extends ConsumerState<BalanceCard> {
-  @override
-  Widget build(BuildContext context) {
-    String profileImage = 'assets/profile_pics/profile_picture1.jpg';
-    final repository = ref.watch(repositoryProvider);
-    final friend = FriendUtils.getSelectedFriend(ref);
-    final balance = friend.calculateBalance(repository);
+    if (selectedFriend == null) {
+      return const Text('No friend selected');
+    }
+
+    final balance = selectedFriend.calculateBalance(ref.read(repositoryProvider.notifier));
     final balanceColor = balance >= 0 ? Colors.green : Colors.red;
 
     return Card(
@@ -29,18 +29,18 @@ class _BalanceCardState extends ConsumerState<BalanceCard> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            _buildProfileRow(profileImage, balance, balanceColor),
+            _buildProfileRow(selectedFriend, balance, balanceColor),
             const SizedBox(height: 20.0),
-            _buildExpenseDetails(),
+            _buildExpenseDetails(context, ref),
           ],
         ),
       ),
     );
   }
 
-  Row _buildProfileRow(String profileImage,
-      double balance, MaterialColor balanceColor) {
-    final friend = FriendUtils.getSelectedFriend(ref);
+  Row _buildProfileRow(
+      FriendProfile friend, double balance, MaterialColor balanceColor) {
+    String profileImage = 'assets/profile_pics/profile_picture1.jpg';
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
@@ -59,19 +59,20 @@ class _BalanceCardState extends ConsumerState<BalanceCard> {
     );
   }
 
-  Widget _buildExpenseDetails() {
-    final expenses = FriendUtils.getSelectedFriendExpenses(ref);
-    if (expenses.isEmpty) {
+  Widget _buildExpenseDetails(BuildContext context, WidgetRef ref) {
+    final repository = ref.read(repositoryProvider.notifier);
+    final selectedFriend = ref.watch(repositoryProvider).selectedFriend;
+    if (repository.findFriendExpenses(selectedFriend!.id).isEmpty) {
       return _buildNoExpensesCard();
     }
-    return _buildHistoryCard();
+    return _buildHistoryCard(context, ref);
   }
 
   Widget _buildNoExpensesCard() {
     return const Text('There are no expenses yet!');
   }
 
-  Widget _buildHistoryCard() {
+  Widget _buildHistoryCard(BuildContext context, WidgetRef ref) {
     final friendExpenses = FriendUtils.getSelectedFriendExpenses(ref);
     final lastExpense = friendExpenses.last;
     return Column(
@@ -85,17 +86,13 @@ class _BalanceCardState extends ConsumerState<BalanceCard> {
           ),
         ),
         TextButton(
-            onPressed: () async {
-              final updated = await Navigator.push<bool>(
+            onPressed: () {
+              Navigator.push<bool>(
                 context,
                 MaterialPageRoute(
                   builder: (context) => const HistoryPage(),
                 ),
               );
-
-              if (updated == true) {
-                setState(() {});
-              }
             },
             child: const Text(
               'See all history',

@@ -19,33 +19,27 @@ class _FriendsPageState extends ConsumerState<FriendsPage> {
   static const String defaultProfileImage =
       'assets/profile_pics/profile_picture1.jpg';
 
-  //TODO: change State Management to separate concerns
-
   void _deleteFriend(int index) {
-    final repository = ref.watch(repositoryProvider);
-    final friends = repository.findAllFriends();
+    final friends = ref.watch(repositoryProvider).currentFriends;
     final deletedFriend = friends[index];
-    repository.deleteFriend(friends[index]);
-
+    ref.read(repositoryProvider.notifier).deleteFriend(friends[index]);
 
     // TODO: add the friend back on their last index
     showSnackBar(context, '${deletedFriend.name} deleted', 'Undo', () {
-      repository.insertFriend(deletedFriend);
+      ref.read(repositoryProvider.notifier).insertFriend(deletedFriend);
     });
   }
 
   void _editFriendName(int index, String newName) {
-    final repository = ref.watch(repositoryProvider);
-    final friends = repository.findAllFriends();
-    repository.editFriendName(friends[index], newName);
+    final friends = ref.watch(repositoryProvider).currentFriends;
+    ref.read(repositoryProvider.notifier).editFriendName(friends[index], newName);
     showSnackBar(context, '${friends[index].name} edited successfully!');
   }
 
   void _addFriend(String? name) {
-    final repository = ref.watch(repositoryProvider);
     if (name != null && name.isNotEmpty) {
       final newFriend = FriendProfile(name: name, imageUrl: defaultProfileImage);
-      repository.insertFriend(newFriend);
+      ref.read(repositoryProvider.notifier).insertFriend(newFriend);
       showSnackBar(context, '$name added');
       Navigator.of(context).pop();
     } else {
@@ -56,7 +50,7 @@ class _FriendsPageState extends ConsumerState<FriendsPage> {
   @override
   Widget build(BuildContext context) {
     final repository = ref.watch(repositoryProvider);
-    final friends = repository.findAllFriends();
+    final friends = repository.currentFriends;
     return Scaffold(
       body: ListView.builder(
         itemCount: friends.length,
@@ -111,7 +105,7 @@ class _FriendsPageState extends ConsumerState<FriendsPage> {
 
   Dismissible _buildFriendListItem(int index) {
     final repository = ref.watch(repositoryProvider);
-    final friends = repository.findAllFriends();
+    final friends = repository.currentFriends;
     return Dismissible(
       key: Key(friends[index].name),
       direction: DismissDirection.endToStart,
