@@ -31,7 +31,7 @@ class Expense {
     if (paidByUser > shouldBePaidByUser) {
       return paidByUser - shouldBePaidByUser;
     } else if (paidByFriend > shouldBePaidByFriend) {
-      return paidByFriend - shouldBePaidByFriend;
+      return -(paidByFriend - shouldBePaidByFriend);
     } else {
       return 0.0;
     }
