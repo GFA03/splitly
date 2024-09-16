@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'expense_input_field.dart';
-
 // Widget for the "Should be paid" fields
 class ShouldBePaidSection extends StatelessWidget {
   const ShouldBePaidSection({
@@ -9,41 +7,76 @@ class ShouldBePaidSection extends StatelessWidget {
     required this.shouldBePaidByUser,
     required this.shouldBePaidByFriend,
     required this.submitted,
-    required this.onSavedShouldBePaidByUser,
-    required this.onSavedShouldBePaidByFriend,
+    required this.totalCost,
+    required this.onSliderChanged,
+    required this.onTextFieldChanged,
   });
 
-  final double? shouldBePaidByUser;
-  final double? shouldBePaidByFriend;
+  final double shouldBePaidByUser;
+  final double shouldBePaidByFriend;
   final bool submitted;
-  final void Function(String?) onSavedShouldBePaidByUser;
-  final void Function(String?) onSavedShouldBePaidByFriend;
+  final double totalCost;
+  final void Function(double, double) onSliderChanged;
+  final void Function(double, double) onTextFieldChanged;
 
   @override
   Widget build(BuildContext context) {
-    final RegExp digitRegex = RegExp(r'^[0-9]+(\.[0-9]{1,2})?$');
+    final TextEditingController userController =
+        TextEditingController(text: shouldBePaidByUser.toStringAsFixed(2));
+    final TextEditingController friendController =
+        TextEditingController(text: shouldBePaidByFriend.toStringAsFixed(2));
+
     return Column(
       children: [
-        ExpenseInputField(
-          label: 'Should be paid by you',
-          initialValue: shouldBePaidByUser.toString() == 'null' ? null : shouldBePaidByUser.toString(),
-          enabled: !submitted,
-          onSaved: onSavedShouldBePaidByUser,
-          keyboardType: TextInputType.number,
-          validator: (value) => (value == null || !digitRegex.hasMatch(value))
-              ? 'Please enter a valid amount!'
-              : null,
+        const Text('Should Be Paid By You:'),
+        Row(
+          children: [
+            Expanded(
+              child: TextFormField(
+                controller: userController,
+                keyboardType: TextInputType.number,
+                onChanged: (value) {
+                  double userAmount = double.tryParse(value) ?? 0.0;
+                  onTextFieldChanged(userAmount, totalCost - userAmount);
+                },
+              ),
+            ),
+            Slider(
+              value: shouldBePaidByUser,
+              min: 0,
+              max: totalCost,
+              divisions: 8,
+              label: shouldBePaidByUser.toStringAsFixed(2),
+              onChanged: (value) {
+                onSliderChanged(value, totalCost - value);
+              },
+            ),
+          ],
         ),
-        const SizedBox(height: 20),
-        ExpenseInputField(
-          label: 'Should be paid by them',
-          initialValue: shouldBePaidByFriend.toString() == 'null' ? null : shouldBePaidByFriend.toString(),
-          enabled: !submitted,
-          onSaved: onSavedShouldBePaidByFriend,
-          keyboardType: TextInputType.number,
-          validator: (value) => (value == null || !digitRegex.hasMatch(value))
-              ? 'Please enter a valid amount!'
-              : null,
+        const Text('Should Be Paid By Friend:'),
+        Row(
+          children: [
+            Expanded(
+              child: TextFormField(
+                controller: friendController,
+                keyboardType: TextInputType.number,
+                onChanged: (value) {
+                  double friendAmount = double.tryParse(value) ?? 0.0;
+                  onTextFieldChanged(friendAmount, totalCost - friendAmount);
+                },
+              ),
+            ),
+            Slider(
+              value: shouldBePaidByFriend,
+              min: 0,
+              max: totalCost,
+              divisions: 8,
+              label: shouldBePaidByFriend.toStringAsFixed(2),
+              onChanged: (value) {
+                onSliderChanged(totalCost - value, value);
+              },
+            ),
+          ],
         ),
       ],
     );

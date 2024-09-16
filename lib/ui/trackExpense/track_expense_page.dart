@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:splitly/providers.dart';
+import 'package:splitly/ui/trackExpense/components/expense_input_field.dart';
 import 'package:splitly/ui/widgets/buttons/large_button.dart';
 import 'package:splitly/data/models/expense.dart';
 
 import 'components/expense_details_section.dart';
 import 'components/paid_amount_section.dart';
-import 'components/payment_choice.dart';
 import 'components/should_be_paid_section.dart';
 
-enum PaymentOptions { you, both, them }
-//todo: remove payment options (because it is self inferred by looking at how much each party has paid), and add a slider for Should be paid and for How much have you paid + a field for Total Cost Price
 class TrackExpense extends ConsumerStatefulWidget {
   const TrackExpense({super.key, this.expense});
 
@@ -27,12 +25,12 @@ class _TrackExpenseState extends ConsumerState<TrackExpense> {
   String? _name;
   String? _description;
   DateTime? _date;
-  double? _shouldBePaidByUser;
-  double? _shouldBePaidByFriend;
+  double totalCost = 0.0;
+  double _shouldBePaidByUser = 0.0;
+  double _shouldBePaidByFriend = 0.0;
   double _paidByUser = 0.0;
   double _paidByFriend = 0.0;
 
-  PaymentOptions paymentView = PaymentOptions.you;
   bool submitted = false;
 
   @override
@@ -40,6 +38,7 @@ class _TrackExpenseState extends ConsumerState<TrackExpense> {
     super.initState();
     Expense? expense = widget.expense;
     if (expense != null) {
+      totalCost = expense.shouldBePaidByUser + expense.shouldBePaidByFriend;
       _name = expense.name;
       _description = expense.description;
       _date = expense.date;
@@ -47,19 +46,9 @@ class _TrackExpenseState extends ConsumerState<TrackExpense> {
       _shouldBePaidByFriend = expense.shouldBePaidByFriend;
       _paidByUser = expense.paidByUser;
       _paidByFriend = expense.paidByFriend;
-      paymentView = _determinePaymentSelection();
     } else {
       _date = DateTime.now(); // Default to current date if adding a new expense
     }
-  }
-
-  PaymentOptions _determinePaymentSelection() {
-    if (_paidByUser > 0 && _paidByFriend > 0) {
-      return PaymentOptions.both;
-    } else if (_paidByFriend > 0) {
-      return PaymentOptions.them;
-    }
-    return PaymentOptions.you;
   }
 
   void _handleSubmit() {
@@ -76,29 +65,6 @@ class _TrackExpenseState extends ConsumerState<TrackExpense> {
 
       _formKey.currentState!.save();
 
-      if (paymentView == PaymentOptions.both) {
-        // Validate that paidByUser + paidByFriend == shouldBePaidByUser + shouldBePaidByFriend
-        final totalShouldBePaid =
-            (_shouldBePaidByUser ?? 0) + (_shouldBePaidByFriend ?? 0);
-        final totalPaid = _paidByUser + _paidByFriend;
-
-        if (totalPaid != totalShouldBePaid) {
-          // Show an error if the totals do not match
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                  'The total paid amount does not match the total amount that should be paid!'),
-              backgroundColor: Colors.red,
-            ),
-          );
-          setState(() {
-            submitted =
-                false; // Reset submission state to allow for further edits
-          });
-          return;
-        }
-      }
-
       if (_description != null && _description!.isEmpty) {
         _description = null;
       }
@@ -107,8 +73,8 @@ class _TrackExpenseState extends ConsumerState<TrackExpense> {
         // If editing, update the existing expense object
         widget.expense!
           ..name = _name!
-          ..shouldBePaidByUser = _shouldBePaidByUser!
-          ..shouldBePaidByFriend = _shouldBePaidByFriend!
+          ..shouldBePaidByUser = _shouldBePaidByUser
+          ..shouldBePaidByFriend = _shouldBePaidByFriend
           ..paidByUser = _paidByUser
           ..paidByFriend = _paidByFriend
           ..description = _description
@@ -120,14 +86,10 @@ class _TrackExpenseState extends ConsumerState<TrackExpense> {
           name: _name!,
           description: _description,
           date: _date,
-          shouldBePaidByUser: _shouldBePaidByUser!,
-          shouldBePaidByFriend: _shouldBePaidByFriend!,
-          paidByUser: paymentView == PaymentOptions.you
-              ? _shouldBePaidByUser! + _shouldBePaidByFriend!
-              : _paidByUser,
-          paidByFriend: paymentView == PaymentOptions.them
-              ? _shouldBePaidByUser! + _shouldBePaidByFriend!
-              : _paidByFriend,
+          shouldBePaidByUser: _shouldBePaidByUser,
+          shouldBePaidByFriend: _shouldBePaidByFriend,
+          paidByUser: _paidByUser,
+          paidByFriend: _paidByFriend,
           friendId: selectedFriend.id,
         );
         Navigator.pop(context, newExpense);
@@ -145,6 +107,8 @@ class _TrackExpenseState extends ConsumerState<TrackExpense> {
 
   @override
   Widget build(BuildContext context) {
+    final RegExp digitRegex = RegExp(r'^[0-9]+(\.[0-9]{1,2})?$');
+
     return Scaffold(
       appBar: AppBar(title: const Text('Track Expense')),
       body: Form(
@@ -157,6 +121,86 @@ class _TrackExpenseState extends ConsumerState<TrackExpense> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 20),
+                  ExpenseInputField(
+                    label: 'Total cost:',
+                    initialValue: totalCost.toString(),
+                    enabled: !submitted,
+                    onChanged: (value) {
+                      final val = double.parse(value ?? '0');
+                      setState(() {
+                        totalCost = val;
+                        // Adjust sliders when totalCost changes
+                        _shouldBePaidByUser = val * 0.5; // Default 50-50 split
+                        _shouldBePaidByFriend = val * 0.5;
+                        _paidByUser = val * 0.5;
+                        _paidByFriend = val * 0.5;
+                      });
+                    },
+                    keyboardType: TextInputType.number,
+                    validator: (value) =>
+                        (value == null || !digitRegex.hasMatch(value))
+                            ? 'Please enter a valid number'
+                            : null,
+                  ),
+                  // Text('Total Cost: \$${totalCost.toStringAsFixed(2)}'),
+                  // Slider(
+                  //   value: totalCost,
+                  //   min: 0,
+                  //   max: 1000,
+                  //   // Adjust as needed
+                  //   divisions: 100,
+                  //   label: totalCost.toStringAsFixed(2),
+                  //   onChanged: (value) {
+                  //     setState(() {
+                  //       totalCost = value;
+                  //       // Adjust sliders when totalCost changes
+                  //       _shouldBePaidByUser =
+                  //           value * 0.5; // Default 50-50 split
+                  //       _shouldBePaidByFriend = value * 0.5;
+                  //       _paidByUser = value * 0.5;
+                  //       _paidByFriend = value * 0.5;
+                  //     });
+                  //   },
+                  // ),
+                  const SizedBox(height: 20),
+                  ShouldBePaidSection(
+                    shouldBePaidByUser: _shouldBePaidByUser,
+                    shouldBePaidByFriend: _shouldBePaidByFriend,
+                    totalCost: totalCost,
+                    submitted: submitted,
+                    onSliderChanged: (user, friend) {
+                      setState(() {
+                        _shouldBePaidByUser = user;
+                        _shouldBePaidByFriend = friend;
+                      });
+                    },
+                    onTextFieldChanged: (user, friend) {
+                      setState(() {
+                        _shouldBePaidByUser = user;
+                        _shouldBePaidByFriend = friend;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  PaidAmountsSection(
+                    paidByUser: _paidByUser,
+                    paidByFriend: _paidByFriend,
+                    submitted: submitted,
+                    totalCost: totalCost,
+                    onSliderChanged: (user, friend) {
+                      setState(() {
+                        _paidByUser = user;
+                        _paidByFriend = friend;
+                      });
+                    },
+                    onTextFieldChanged: (user, friend) {
+                      setState(() {
+                        _paidByUser = user;
+                        _paidByFriend = friend;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 20),
                   ExpenseDetailsSection(
                     name: _name,
                     description: _description,
@@ -165,36 +209,6 @@ class _TrackExpenseState extends ConsumerState<TrackExpense> {
                     onNameSaved: (value) => _name = value!,
                     onDescriptionSaved: (value) => _description = value,
                     onDateSelected: (date) => setState(() => _date = date),
-                  ),
-                  const SizedBox(height: 20),
-                  PaymentChoice(
-                    paymentView: paymentView,
-                    onPaymentOptionChanged: (PaymentOptions newOption) {
-                      setState(() {
-                        paymentView = newOption;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  ShouldBePaidSection(
-                    shouldBePaidByUser: _shouldBePaidByUser,
-                    shouldBePaidByFriend: _shouldBePaidByFriend,
-                    submitted: submitted,
-                    onSavedShouldBePaidByUser: (value) =>
-                        _shouldBePaidByUser = double.parse(value ?? '0'),
-                    onSavedShouldBePaidByFriend: (value) =>
-                        _shouldBePaidByFriend = double.parse(value ?? '0'),
-                  ),
-                  const SizedBox(height: 20),
-                  PaidAmountsSection(
-                    paidByUser: _paidByUser,
-                    paidByFriend: _paidByFriend,
-                    paymentView: paymentView,
-                    submitted: submitted,
-                    onSavedPaidByUser: (value) =>
-                        _paidByUser = double.parse(value ?? '0'),
-                    onSavedPaidByFriend: (value) =>
-                        _paidByFriend = double.parse(value ?? '0'),
                   ),
                   const SizedBox(height: 50),
                   LargeButton(onPressed: _handleSubmit, label: 'Submit')

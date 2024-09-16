@@ -7,7 +7,8 @@ class ExpenseInputField extends StatelessWidget {
     required this.label,
     this.initialValue,
     required this.enabled,
-    required this.onSaved,
+    this.onSaved,
+    this.onChanged,
     this.keyboardType = TextInputType.text,
     this.validator,
   });
@@ -15,7 +16,8 @@ class ExpenseInputField extends StatelessWidget {
   final String label;
   final String? initialValue;
   final bool enabled;
-  final void Function(String?) onSaved;
+  final void Function(String?)? onSaved;
+  final void Function(String?)? onChanged;
   final TextInputType keyboardType;
   final String? Function(String?)? validator;
 
@@ -31,6 +33,7 @@ class ExpenseInputField extends StatelessWidget {
       keyboardType: keyboardType,
       validator: validator,
       onSaved: onSaved,
+      onChanged: onChanged,
     );
   }
 }
