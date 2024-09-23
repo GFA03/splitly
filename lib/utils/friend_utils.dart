@@ -4,6 +4,8 @@ import 'package:splitly/data/models/friend_profile.dart';
 import 'package:splitly/providers.dart';
 
 class FriendUtils {
+  static String unknownProfilePicture = 'assets/profile_pics/profile_picture6.jpg';
+
   // Function to retrieve the selected friend from the repository
   static FriendProfile? getSelectedFriend(WidgetRef ref) {
     return ref.watch(repositoryProvider).selectedFriend;

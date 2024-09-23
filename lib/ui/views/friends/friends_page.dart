@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:splitly/providers.dart';
-import 'package:splitly/ui/views/friends/components/friend_card.dart';
 import 'package:splitly/data/models/friend_profile.dart';
 import 'package:splitly/utils.dart';
 
@@ -15,7 +14,6 @@ class FriendsPage extends ConsumerStatefulWidget {
 }
 
 class _FriendsPageState extends ConsumerState<FriendsPage> {
-
   static const String defaultProfileImage =
       'assets/profile_pics/profile_picture1.jpg';
 
@@ -30,15 +28,15 @@ class _FriendsPageState extends ConsumerState<FriendsPage> {
     });
   }
 
-  void _editFriendName(int index, String newName) {
-    final friends = ref.watch(repositoryProvider).currentFriends;
-    ref.read(repositoryProvider.notifier).editFriendName(friends[index], newName);
-    showSnackBar(context, '${friends[index].name} edited successfully!');
+  void _editFriendName(FriendProfile friend, String newName) {
+    ref.read(repositoryProvider.notifier).editFriendName(friend, newName);
+    showSnackBar(context, '${friend.name} edited successfully!');
   }
 
   void _addFriend(String? name) {
     if (name != null && name.isNotEmpty) {
-      final newFriend = FriendProfile(name: name, imageUrl: defaultProfileImage);
+      final newFriend =
+          FriendProfile(name: name, imageUrl: defaultProfileImage);
       ref.read(repositoryProvider.notifier).insertFriend(newFriend);
       showSnackBar(context, '$name added');
       Navigator.of(context).pop();
@@ -123,11 +121,84 @@ class _FriendsPageState extends ConsumerState<FriendsPage> {
       ),
       child: GestureDetector(
         onTap: () => widget.onFriendSelected(friends[index]),
-        child: FriendCard(
+        child: _buildFriendCard(
           friend: friends[index],
-          onEdit: (newName) => _editFriendName(index, newName),
         ),
       ),
+    );
+  }
+
+  Card _buildFriendCard({required FriendProfile friend}) {
+    return Card(
+      elevation: 0.0,
+      margin: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 16.0),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+        child: _buildFriendInfo(context, friend),
+      ),
+    );
+  }
+
+  Row _buildFriendInfo(BuildContext context, FriendProfile friend) {
+    return Row(
+      children: [
+        CircleAvatar(
+            backgroundImage: AssetImage(
+                friend.imageUrl ?? 'assets/profile_pics/profile_picture6.jpg'),
+            radius: 25),
+        const SizedBox(width: 15.0),
+        Text(friend.name),
+        const Spacer(),
+        _buildEditButton(context, friend)
+      ],
+    );
+  }
+
+  IconButton _buildEditButton(BuildContext context, FriendProfile friend) {
+    return IconButton(
+        onPressed: () {
+          _showEditDialog(context, friend);
+        },
+        icon: Icon(
+          Icons.edit,
+          color: Theme.of(context).iconTheme.color,
+          size: 18,
+        ));
+  }
+
+  void _showEditDialog(BuildContext context, FriendProfile friend) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        final TextEditingController controller =
+            TextEditingController(text: friend.name);
+
+        return AlertDialog(
+          title: const Text('Edit Friend Name'),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(hintText: 'Enter new name'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(), // Cancel editing
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                if (controller.text.isNotEmpty) {
+                  _editFriendName(
+                      friend,
+                      controller
+                          .text); // Call the edit callback with the new name
+                  Navigator.of(context).pop(); // Close the dialog
+                }
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

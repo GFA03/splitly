@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:splitly/providers.dart';
 import 'package:splitly/ui/views/expenseForm/expense_form_page.dart';
-import 'package:splitly/ui/views/history/components/expense_card.dart';
 import 'package:splitly/data/models/expense.dart';
 import 'package:splitly/utils.dart';
 
@@ -65,7 +64,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
       background: _buildDeleteBackground(),
       child: GestureDetector(
         onTap: () => _showExpenseDetails(expense),
-        child: ExpenseCard(expense: expense),
+        child: _buildExpenseCard(expense: expense),
       ),
     );
   }
@@ -76,6 +75,71 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
       alignment: Alignment.centerRight,
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: const Icon(Icons.delete, color: Colors.white),
+    );
+  }
+
+  Widget _buildExpenseCard({required Expense expense}) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Card(
+        elevation: 10.0,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildExpenseDetails(expense: expense),
+              const Spacer(),
+              _buildCostDetails(expense: expense),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Column _buildExpenseDetails({required Expense expense}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          expense.name,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 4.0),
+        Text(
+          formatDate(expense.date),
+          style: TextStyle(
+            color: Colors.grey[600],
+            fontSize: 12,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Column _buildCostDetails({required Expense expense}) {
+    return Column(
+      children: [
+        Text(
+          '${expense.totalCost}\$',
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 4.0),
+        Text(
+          '(Paid by ${expense.payer})',
+          style: TextStyle(
+            color: Colors.grey[600],
+            fontSize: 10,
+          ),
+        ),
+      ],
     );
   }
 
