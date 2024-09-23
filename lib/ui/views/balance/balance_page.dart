@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:splitly/providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:splitly/ui/balance/components/balance_card.dart';
-import 'package:splitly/ui/trackExpense/track_expense_page.dart';
+import 'package:splitly/ui/views/balance/components/balance_card.dart';
+import 'package:splitly/ui/views/expenseForm/expense_form_page.dart';
 import 'package:splitly/ui/widgets/buttons/large_button.dart';
 
 class BalancePage extends ConsumerStatefulWidget {
@@ -52,7 +52,7 @@ class _BalancePageState extends ConsumerState<BalancePage> {
         onPressed: () async {
           final newExpense = await Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const TrackExpense()),
+            MaterialPageRoute(builder: (context) => const ExpenseFormPage()),
           );
 
           if (newExpense != null) {

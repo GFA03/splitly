@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:splitly/providers.dart';
-import 'package:splitly/ui/history/components/expense_card.dart';
+import 'package:splitly/ui/views/expenseForm/expense_form_page.dart';
+import 'package:splitly/ui/views/history/components/expense_card.dart';
 import 'package:splitly/data/models/expense.dart';
-import 'package:splitly/ui/trackExpense/track_expense_page.dart';
 import 'package:splitly/utils.dart';
 
 class HistoryPage extends ConsumerStatefulWidget {
@@ -137,7 +137,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
             final editedExpense = await Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => TrackExpense(expense: expense)),
+                  builder: (context) => ExpenseFormPage(editExpense: expense)),
             );
 
             if (editedExpense != null) {

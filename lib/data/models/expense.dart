@@ -24,6 +24,7 @@ class Expense {
   DateTime date; // Date of the expense
   String? description; // Optional description of the expense
 
+  set id(String newId) => id = newId;
   // Get the total cost of the expense (sum of what both parties should pay)
   double get totalCost => shouldBePaidByUser + shouldBePaidByFriend;
 

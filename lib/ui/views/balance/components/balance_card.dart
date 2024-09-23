@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:splitly/data/models/friend_profile.dart';
 import 'package:splitly/providers.dart';
-import 'package:splitly/ui/balance/components/profile_card.dart';
-import 'package:splitly/ui/history/history_page.dart';
+import 'package:splitly/ui/views/balance/components/profile_card.dart';
+import 'package:splitly/ui/views/history/history_page.dart';
 import 'package:splitly/utils/friend_utils.dart';
 
 class BalanceCard extends ConsumerWidget {

@@ -8,7 +8,7 @@ class MemoryRepository extends Notifier<CurrentFriendData>
     implements Repository {
   @override
   CurrentFriendData build() {
-    const currentFriendData = CurrentFriendData();
+    var currentFriendData = CurrentFriendData(selectedFriend: dummyFriendData[0]);
     return currentFriendData;
   }
 

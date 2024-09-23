@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:splitly/data/models/friend_profile.dart';
 import 'package:splitly/providers.dart';
-import 'package:splitly/ui/balance/balance_page.dart';
-import 'package:splitly/ui/friends/friends_page.dart';
-import 'package:splitly/ui/settings/settings_page.dart';
+import 'package:splitly/ui/views/balance/balance_page.dart';
+import 'package:splitly/ui/views/friends/friends_page.dart';
+import 'package:splitly/ui/views/settings/settings_page.dart';
 
 class Home extends ConsumerStatefulWidget {
   const Home({

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:splitly/providers.dart';
-import 'package:splitly/ui/friends/components/friend_card.dart';
+import 'package:splitly/ui/views/friends/components/friend_card.dart';
 import 'package:splitly/data/models/friend_profile.dart';
 import 'package:splitly/utils.dart';
 
