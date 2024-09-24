@@ -46,9 +46,7 @@ class _ExpenseFormPageState extends ConsumerState<ExpenseFormPage> {
   }
 
   void _handleSubmit() {
-    final selectedFriend = ref
-        .read(repositoryProvider)
-        .selectedFriend;
+    final selectedFriend = ref.read(repositoryProvider).selectedFriend;
 
     if (selectedFriend == null) {
       throw ArgumentError('There is no friend selected!');
@@ -115,7 +113,8 @@ class _ExpenseFormPageState extends ConsumerState<ExpenseFormPage> {
                   const SizedBox(height: 24.0),
                   _buildDescriptionField(),
                   const SizedBox(height: 32),
-                  ButtonOutlined(label: 'Add Expense', onPressed: _handleSubmit),
+                  ButtonOutlined(
+                      label: 'Add Expense', onPressed: _handleSubmit),
                 ],
               ),
             )),
@@ -125,105 +124,119 @@ class _ExpenseFormPageState extends ConsumerState<ExpenseFormPage> {
 
   FilledTextField _buildDescriptionField() {
     return FilledTextField(
-                  label: 'Description',
-                  value: description,
-                  enabled: !submitted,
-                  onSaved: (value) =>
-                  {
-                    setState(() {
-                      description = value;
-                    })
-                  },
-                  validator: (value) =>
-                      ValidatorUtils.canBeEmptyValidator(value),
-                );
+      label: 'Description',
+      value: description,
+      enabled: !submitted,
+      onSaved: (value) => {
+        setState(() {
+          description = value;
+        })
+      },
+      validator: (value) => ValidatorUtils.canBeEmptyValidator(value),
+    );
   }
 
   FilledTextField _buildTotalCostField() {
     return FilledTextField(
-                  label: 'Total cost',
-                  value: totalCost?.toStringAsFixed(2),
-                  enabled: !submitted,
-                  onChanged: (value) {
-                    final val = double.parse(value ?? '0');
-                    setState(() {
-                      totalCost = val;
-                      userConsumption = val * 0.5;
-                      paidByUser = val * 0.5;
-                      friendConsumption = val * 0.5;
-                      paidByFriend = val * 0.5;
-                    });
-                  },
-                  validator: (value) =>
-                      ValidatorUtils.doubleOnlyValidator(value),
-                );
+      label: 'Total cost',
+      value: totalCost?.toStringAsFixed(2),
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      enabled: !submitted,
+      onChanged: (value) {
+        try {
+          final val = double.parse(value ?? '0');
+          final resultFixedToTwoDecimals =
+              double.parse((val * 0.5).toStringAsFixed(2));
+          setState(() {
+            totalCost = val;
+            userConsumption = resultFixedToTwoDecimals;
+            paidByUser = resultFixedToTwoDecimals;
+            friendConsumption = resultFixedToTwoDecimals;
+            paidByFriend = resultFixedToTwoDecimals;
+          });
+        } catch (e) {
+          if (e is FormatException) {
+            setState(() {
+              totalCost = null;
+              userConsumption = 0;
+              paidByUser = 0;
+              friendConsumption = 0;
+              paidByFriend = 0;
+            });
+          }
+        }
+      },
+      validator: (value) => ValidatorUtils.doubleOnlyValidator(value),
+    );
   }
 
   FilledTextField _buildExpenseNameField() {
     return FilledTextField(
-                  label: 'Expense name',
-                  value: expenseName,
-                  enabled: !submitted,
-                  onSaved: (value) {
-                    setState(() {
-                      expenseName = value;
-                    });
-                  },
-                  validator: (value) =>
-                      ValidatorUtils.mandatoryFieldValidator(value),
-                );
+      label: 'Expense name',
+      value: expenseName,
+      enabled: !submitted,
+      onSaved: (value) {
+        setState(() {
+          expenseName = value;
+        });
+      },
+      validator: (value) => ValidatorUtils.mandatoryFieldValidator(value),
+    );
   }
 
   TextFormField _buildDatePicker(BuildContext context) {
     return TextFormField(
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: 'Date of Expense',
-                  ),
-                  readOnly: true,
-                  onTap: () async {
-                    final DateTime? pickedDate = await showDatePicker(
-                      context: context,
-                      initialDate: date,
-                      firstDate: DateTime(2000),
-                      lastDate: DateTime.now(),
-                    );
-                    if (pickedDate != null) {
-                      setState(() => date = pickedDate);
-                    }
-                  },
-                  controller: TextEditingController(
-                    text: "${date.toLocal()}".split(' ')[0],
-                  ),
-                );
+      decoration: const InputDecoration(
+        border: OutlineInputBorder(),
+        labelText: 'Date of Expense',
+      ),
+      readOnly: true,
+      onTap: () async {
+        final DateTime? pickedDate = await showDatePicker(
+          context: context,
+          initialDate: date,
+          firstDate: DateTime(2000),
+          lastDate: DateTime.now(),
+        );
+        if (pickedDate != null) {
+          setState(() => date = pickedDate);
+        }
+      },
+      controller: TextEditingController(
+        text: "${date.toLocal()}".split(' ')[0],
+      ),
+    );
   }
 
   List<Widget> _buildPaySection() {
-    return [_buildCard(
-        cardTitle: 'You',
-        consumptionLabel: 'Your consumption:',
-        paidLabel: 'You paid:',
-        totalCost: totalCost,
-        consumption: userConsumption,
-        paid: paidByUser,
-        onConsumptionChanged: (val) {
-          if (totalCost == null) {
-            return;
-          }
-          setState(() {
-            userConsumption = val;
-            friendConsumption = totalCost! - val;
-          });
-        },
-        onPaidChanged: (val) {
-          if (totalCost == null) {
-            return;
-          }
-          setState(() {
-            paidByUser = val;
-            paidByFriend = totalCost! - val;
-          });
-        }),
+    return [
+      _buildCard(
+          cardTitle: 'You',
+          consumptionLabel: 'Your consumption:',
+          paidLabel: 'You paid:',
+          totalCost: totalCost,
+          consumption: userConsumption,
+          paid: paidByUser,
+          onConsumptionChanged: (val) {
+            if (totalCost == null) {
+              return;
+            }
+            final valFixedToTwoDecimals = double.parse(val.toStringAsFixed(2));
+            setState(() {
+              userConsumption = valFixedToTwoDecimals;
+              friendConsumption = totalCost! - valFixedToTwoDecimals;
+            });
+          },
+          onPaidChanged: (val) {
+            if (totalCost == null) {
+              return;
+            }
+            final valFixedToTwoDecimals = double.parse(val.toStringAsFixed(2));
+            setState(() {
+              paidByUser = valFixedToTwoDecimals;
+              paidByFriend = totalCost! - valFixedToTwoDecimals;
+            });
+          }),
       const SizedBox(height: 16.0),
       _buildCard(
           cardTitle: 'Your friend:',
@@ -236,20 +249,23 @@ class _ExpenseFormPageState extends ConsumerState<ExpenseFormPage> {
             if (totalCost == null) {
               return;
             }
+            final valFixedToTwoDecimals = double.parse(val.toStringAsFixed(2));
             setState(() {
-              friendConsumption = val;
-              userConsumption = totalCost! - val;
+              friendConsumption = valFixedToTwoDecimals;
+              userConsumption = totalCost! - valFixedToTwoDecimals;
             });
           },
           onPaidChanged: (val) {
             if (totalCost == null) {
               return;
             }
+            final valFixedToTwoDecimals = double.parse(val.toStringAsFixed(2));
             setState(() {
-              paidByFriend = val;
-              paidByUser = totalCost! - val;
+              paidByFriend = valFixedToTwoDecimals;
+              paidByUser = totalCost! - valFixedToTwoDecimals;
             });
-          })];
+          })
+    ];
   }
 
   Widget _buildCard({
@@ -272,8 +288,7 @@ class _ExpenseFormPageState extends ConsumerState<ExpenseFormPage> {
             const SizedBox(height: 16.0),
             Text(
               consumptionLabel,
-              style: Theme
-                  .of(context)
+              style: Theme.of(context)
                   .textTheme
                   .bodySmall
                   ?.apply(color: Colors.grey),
@@ -285,8 +300,7 @@ class _ExpenseFormPageState extends ConsumerState<ExpenseFormPage> {
             const SizedBox(height: 12.0),
             Text(
               paidLabel,
-              style: Theme
-                  .of(context)
+              style: Theme.of(context)
                   .textTheme
                   .bodySmall
                   ?.apply(color: Colors.grey),
@@ -299,9 +313,10 @@ class _ExpenseFormPageState extends ConsumerState<ExpenseFormPage> {
     );
   }
 
-  Widget _buildCardRow({required double? value,
-    required double? totalCost,
-    required ValueChanged<double> onChanged}) {
+  Widget _buildCardRow(
+      {required double? value,
+      required double? totalCost,
+      required ValueChanged<double> onChanged}) {
     return Row(
       children: [
         Expanded(
@@ -313,14 +328,71 @@ class _ExpenseFormPageState extends ConsumerState<ExpenseFormPage> {
             onChanged: onChanged,
           ),
         ),
-        Text(
-          value?.toStringAsFixed(2) ?? '0.0',
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
+        GestureDetector(
+          onTap: () async {
+            final double? result = await _showInputDialog(
+              context: context,
+              title: 'Enter Amount',
+              initialValue: value?.toString() ?? '',
+            );
+            if (result != null && totalCost != null) {
+              onChanged(result);
+            }
+          },
+          child: Text(
+            value?.toStringAsFixed(2) ?? '0.0',
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
       ],
+    );
+  }
+
+  Future<double?> _showInputDialog({
+    required BuildContext context,
+    required String title,
+    required String initialValue,
+  }) async {
+    TextEditingController controller =
+        TextEditingController(text: initialValue);
+
+    return showDialog<double>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: TextField(
+            controller: controller,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: const InputDecoration(
+              labelText: 'Enter amount',
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context)
+                    .pop(); // Close the dialog without returning a value
+              },
+            ),
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () {
+                final value = double.tryParse(controller.text);
+                if (value != null) {
+                  Navigator.of(context).pop(value); // Return the parsed value
+                } else {
+                  // Optionally show an error or handle invalid input
+                }
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }
