@@ -1,33 +1,37 @@
 import '../models/models.dart';
 
 abstract class Repository {
-  List<FriendProfile> findAllFriends();
+  Stream<List<FriendProfile>> watchAllFriends();
 
-  Expense findExpenseById(String id);
+  Stream<List<Expense>> watchAllExpenses();
 
-  FriendProfile findFriendById(String id);
+  Future<List<FriendProfile>> findAllFriends();
 
-  List<Expense> findAllExpenses();
+  Future<Expense> findExpenseById(String id);
 
-  List<Expense> findFriendExpenses(String friendId);
+  Future<FriendProfile> findFriendById(String id);
 
-  void selectFriend(FriendProfile friend);
+  Future<List<Expense>> findAllExpenses();
 
-  int insertFriend(FriendProfile friend);
+  Future<List<Expense>> findFriendExpenses(String friendId);
 
-  int insertExpense(Expense expense);
+  Future<void> selectFriend(FriendProfile friend);
 
-  void editFriendName(FriendProfile friend, String newName);
+  Future<int> insertFriend(FriendProfile friend);
 
-  void editExpense(Expense oldExpense, Expense newExpense);
+  Future<int> insertExpense(Expense expense);
 
-  void deleteFriend(FriendProfile friend);
+  Future<void> editFriendName(FriendProfile friend, String newName);
 
-  void deleteExpense(Expense expense);
+  Future<void> editExpense(Expense oldExpense, Expense newExpense);
 
-  void deleteExpenses(List<Expense> expenses);
+  Future<void> deleteFriend(FriendProfile friend);
 
-  void deleteFriendExpenses(String friendId);
+  Future<void> deleteExpense(Expense expense);
+
+  Future<void> deleteExpenses(List<Expense> expenses);
+
+  Future<void> deleteFriendExpenses(String friendId);
 
   Future init();
   void close();

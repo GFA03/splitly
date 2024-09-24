@@ -12,8 +12,8 @@ class FriendProfile {
   final String name;
   final String? imageUrl;
 
-  double calculateBalance(Repository repository) {
-    final expenses = repository.findFriendExpenses(id);
+  Future<double> calculateBalance(Repository repository) async {
+    final expenses = await repository.findFriendExpenses(id);
     if (expenses.isEmpty) {
       return 0;
     }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:splitly/data/models/current_friend_data.dart';
 import 'package:splitly/data/models/expense.dart';
@@ -6,60 +8,99 @@ import 'package:splitly/data/repositories/repository.dart';
 
 class MemoryRepository extends Notifier<CurrentFriendData>
     implements Repository {
+  late Stream<List<FriendProfile>> _friendStream;
+  late Stream<List<Expense>> _expenseStream;
+
+  final StreamController _friendStreamController =
+      StreamController<List<FriendProfile>>();
+  final StreamController _expenseStreamController =
+      StreamController<List<Expense>>();
+
+  MemoryRepository() {
+    _friendStream = _friendStreamController.stream.asBroadcastStream(
+      onListen: (subscription) {
+        // send current friends to new subscriber
+        _friendStreamController.sink.add(state.currentFriends);
+      },
+    ) as Stream<List<FriendProfile>>;
+    _expenseStream = _expenseStreamController.stream.asBroadcastStream(
+      onListen: (subscription) {
+        // send current expenses to new subscriber
+        _expenseStreamController.sink.add(state.currentExpenses);
+      },
+    ) as Stream<List<Expense>>;
+  }
+
   @override
   CurrentFriendData build() {
-    var currentFriendData = CurrentFriendData(selectedFriend: dummyFriendData[0]);
+    var currentFriendData =
+        CurrentFriendData(selectedFriend: dummyFriendData[0]);
     return currentFriendData;
   }
 
   @override
-  List<FriendProfile> findAllFriends() {
-    return state.currentFriends;
+  Stream<List<FriendProfile>> watchAllFriends() {
+    return _friendStream;
   }
 
   @override
-  Expense findExpenseById(String id) {
-    return state.currentExpenses.firstWhere((expense) => expense.id == id);
+  Stream<List<Expense>> watchAllExpenses() {
+    return _expenseStream;
   }
 
   @override
-  FriendProfile findFriendById(String id) {
-    return state.currentFriends.firstWhere((friend) => friend.id == id);
+  Future<List<FriendProfile>> findAllFriends() {
+    return Future.value(state.currentFriends);
   }
 
   @override
-  List<Expense> findAllExpenses() {
-    return state.currentExpenses;
+  Future<Expense> findExpenseById(String id) {
+    return Future.value(
+        state.currentExpenses.firstWhere((expense) => expense.id == id));
   }
 
   @override
-  List<Expense> findFriendExpenses(String friendId) {
-    return state.currentExpenses
+  Future<FriendProfile> findFriendById(String id) {
+    return Future.value(
+        state.currentFriends.firstWhere((friend) => friend.id == id));
+  }
+
+  @override
+  Future<List<Expense>> findAllExpenses() {
+    return Future.value(state.currentExpenses);
+  }
+
+  @override
+  Future<List<Expense>> findFriendExpenses(String friendId) {
+    return Future.value(state.currentExpenses
         .where((expense) => expense.friendId == friendId)
-        .toList();
+        .toList());
   }
 
   @override
-  void selectFriend(FriendProfile friend) {
+  Future<void> selectFriend(FriendProfile friend) {
     state = state.copyWith(selectedFriend: friend);
+
+    return Future.value();
   }
 
   @override
-  int insertFriend(FriendProfile friend) {
-    state = state.copyWith(
-        currentFriends: [...state.currentFriends, friend]);
-    return 0;
+  Future<int> insertFriend(FriendProfile friend) {
+    state = state.copyWith(currentFriends: [...state.currentFriends, friend]);
+    _friendStreamController.sink.add(state.currentFriends);
+    return Future.value(0);
   }
 
   @override
-  int insertExpense(Expense expense) {
-    state = state.copyWith(
-        currentExpenses: [...state.currentExpenses, expense]);
-    return 0;
+  Future<int> insertExpense(Expense expense) {
+    state =
+        state.copyWith(currentExpenses: [...state.currentExpenses, expense]);
+    _expenseStreamController.sink.add(state.currentExpenses);
+    return Future.value(0);
   }
 
   @override
-  void editFriendName(FriendProfile friend, String newName) {
+  Future<void> editFriendName(FriendProfile friend, String newName) {
     final updatedFriends = state.currentFriends.map((f) {
       if (f.id == friend.id) {
         return FriendProfile(id: f.id, name: newName, imageUrl: f.imageUrl);
@@ -68,10 +109,12 @@ class MemoryRepository extends Notifier<CurrentFriendData>
     }).toList();
 
     state = state.copyWith(currentFriends: updatedFriends);
+    _friendStreamController.sink.add(state.currentFriends);
+    return Future.value();
   }
 
   @override
-  void editExpense(Expense oldExpense, Expense newExpense) {
+  Future<void> editExpense(Expense oldExpense, Expense newExpense) {
     final updatedExpenses = state.currentExpenses.map((e) {
       if (e.id == oldExpense.id) {
         return newExpense;
@@ -80,39 +123,49 @@ class MemoryRepository extends Notifier<CurrentFriendData>
     }).toList();
 
     state = state.copyWith(currentExpenses: updatedExpenses);
+    _expenseStreamController.sink.add(state.currentExpenses);
+    return Future.value();
   }
 
   @override
-  void deleteFriend(FriendProfile friend) {
-    final updatedFriends = state.currentFriends
-        .where((f) => f.id != friend.id)
-        .toList();
-    final updatedSelectedFriend = state.selectedFriend == friend ? null : state.selectedFriend;
-    state = state.copyWith(currentFriends: updatedFriends, selectedFriend: updatedSelectedFriend);
+  Future<void> deleteFriend(FriendProfile friend) {
+    final updatedFriends =
+        state.currentFriends.where((f) => f.id != friend.id).toList();
+    final updatedSelectedFriend =
+        state.selectedFriend == friend ? null : state.selectedFriend;
+    state = state.copyWith(
+        currentFriends: updatedFriends, selectedFriend: updatedSelectedFriend);
+    _friendStreamController.sink.add(state.currentFriends);
+    return Future.value();
   }
 
   @override
-  void deleteExpense(Expense expense) {
-    final updatedExpenses = state.currentExpenses
-        .where((e) => e.id != expense.id)
-        .toList();
+  Future<void> deleteExpense(Expense expense) {
+    final updatedExpenses =
+        state.currentExpenses.where((e) => e.id != expense.id).toList();
     state = state.copyWith(currentExpenses: updatedExpenses);
+    _expenseStreamController.sink.add(state.currentExpenses);
+    return Future.value();
   }
 
   @override
-  void deleteExpenses(List<Expense> expenses) {
+  Future<void> deleteExpenses(List<Expense> expenses) {
     final updatedExpenses = state.currentExpenses
         .where((expense) => !expenses.contains(expense))
         .toList();
     state = state.copyWith(currentExpenses: updatedExpenses);
+    _expenseStreamController.sink.add(state.currentExpenses);
+    return Future.value();
   }
 
   @override
-  void deleteFriendExpenses(String friendId) {
+  Future<void> deleteFriendExpenses(String friendId) {
     final updatedExpenses = state.currentExpenses
         .where((expense) => expense.friendId != friendId)
         .toList();
     state = state.copyWith(currentExpenses: updatedExpenses);
+    _expenseStreamController.sink.add(state.currentExpenses);
+    return Future.value();
   }
 
   @override
@@ -121,5 +174,8 @@ class MemoryRepository extends Notifier<CurrentFriendData>
   }
 
   @override
-  void close() {}
+  void close() {
+    _expenseStreamController.close();
+    _friendStreamController.close();
+  }
 }

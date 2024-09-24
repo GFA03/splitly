@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:splitly/data/models/expense.dart';
 import 'package:splitly/data/models/friend_profile.dart';
 import 'package:splitly/providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -66,17 +67,39 @@ class _BalancePageState extends ConsumerState<BalancePage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            _buildProfileRow(selectedFriend),
+            FutureBuilder<Row>(
+              future: _buildProfileRow(selectedFriend),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator();
+                } else if (snapshot.hasError) {
+                  return const Text('Error loading balance');
+                } else {
+                  return snapshot.data ?? const SizedBox.shrink();
+                }
+              },
+            ),
             const SizedBox(height: 20.0),
-            _buildExpenseDetails(context, ref),
+            FutureBuilder<Widget>(
+              future: _buildExpenseDetails(ref),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator();
+                } else if (snapshot.hasError) {
+                  return const Text('Error loading expenses');
+                } else {
+                  return snapshot.data ?? const SizedBox.shrink();
+                }
+              },
+            )
           ],
         ),
       ),
     );
   }
 
-  Row _buildProfileRow(FriendProfile selectedFriend) {
-    final balance =
+  Future<Row> _buildProfileRow(FriendProfile selectedFriend) async {
+    final balance = await
         selectedFriend.calculateBalance(ref.read(repositoryProvider.notifier));
     final balanceColor = balance >= 0 ? Colors.green : Colors.red;
     String profileImage = 'assets/profile_pics/profile_picture1.jpg';
@@ -87,7 +110,7 @@ class _BalancePageState extends ConsumerState<BalancePage> {
             profile: FriendProfile(name: 'You', imageUrl: profileImage)),
         // TODO: add currency option (and you should call an API to convert the selected currency to the settings selected currency
         Text(
-          'Balance: $balance\$',
+          'Balance: ${balance.toStringAsFixed(2)}\$',
           style: TextStyle(
             fontSize: 16.0,
             color: balanceColor,
@@ -98,13 +121,12 @@ class _BalancePageState extends ConsumerState<BalancePage> {
     );
   }
 
-  Widget _buildExpenseDetails(BuildContext context, WidgetRef ref) {
-    final repository = ref.read(repositoryProvider.notifier);
-    final selectedFriend = ref.watch(repositoryProvider).selectedFriend;
-    if (repository.findFriendExpenses(selectedFriend!.id).isEmpty) {
+  Future<Widget> _buildExpenseDetails(WidgetRef ref) async {
+    final friendExpenses = await FriendUtils.getSelectedFriendExpenses(ref);
+    if (friendExpenses.isEmpty) {
       return _buildNoExpensesCard();
     }
-    return _buildHistoryCard(context, ref);
+    return _buildHistoryCard(ref, friendExpenses);
   }
 
   Card _buildProfileCard({required FriendProfile profile}) {
@@ -144,8 +166,7 @@ class _BalancePageState extends ConsumerState<BalancePage> {
     return const Text('There are no expenses yet!');
   }
 
-  Widget _buildHistoryCard(BuildContext context, WidgetRef ref) {
-    final friendExpenses = FriendUtils.getSelectedFriendExpenses(ref);
+  Widget _buildHistoryCard(WidgetRef ref, List<Expense> friendExpenses) {
     final lastExpense = friendExpenses.last;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,

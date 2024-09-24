@@ -22,7 +22,7 @@ class FriendUtils {
   }
 
   // Function to fetch current friend expenses
-  static List<Expense> getSelectedFriendExpenses(WidgetRef ref) {
+  static Future<List<Expense>> getSelectedFriendExpenses(WidgetRef ref) {
     final repository = ref.read(repositoryProvider.notifier);
     String friendId = getSelectedFriendId(ref);
 
