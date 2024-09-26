@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:collection/collection.dart';
 import 'package:splitly/data/models/current_friend_data.dart';
 import 'package:splitly/data/models/expense.dart';
 import 'package:splitly/data/models/friend_profile.dart';
@@ -33,8 +34,8 @@ class MemoryRepository extends Notifier<CurrentFriendData>
 
   @override
   CurrentFriendData build() {
-    var currentFriendData =
-        CurrentFriendData(selectedFriend: dummyFriendData[0]);
+    const currentFriendData =
+        CurrentFriendData();
     return currentFriendData;
   }
 
@@ -60,9 +61,9 @@ class MemoryRepository extends Notifier<CurrentFriendData>
   }
 
   @override
-  Future<FriendProfile> findFriendById(String id) {
+  Future<FriendProfile?> findFriendById(String id) {
     return Future.value(
-        state.currentFriends.firstWhere((friend) => friend.id == id));
+        state.currentFriends.firstWhereOrNull((friend) => friend.id == id));
   }
 
   @override
@@ -75,13 +76,6 @@ class MemoryRepository extends Notifier<CurrentFriendData>
     return Future.value(state.currentExpenses
         .where((expense) => expense.friendId == friendId)
         .toList());
-  }
-
-  @override
-  Future<void> selectFriend(FriendProfile friend) {
-    state = state.copyWith(selectedFriend: friend);
-
-    return Future.value();
   }
 
   @override
@@ -131,10 +125,8 @@ class MemoryRepository extends Notifier<CurrentFriendData>
   Future<void> deleteFriend(FriendProfile friend) {
     final updatedFriends =
         state.currentFriends.where((f) => f.id != friend.id).toList();
-    final updatedSelectedFriend =
-        state.selectedFriend == friend ? null : state.selectedFriend;
     state = state.copyWith(
-        currentFriends: updatedFriends, selectedFriend: updatedSelectedFriend);
+        currentFriends: updatedFriends);
     _friendStreamController.sink.add(state.currentFriends);
     return Future.value();
   }

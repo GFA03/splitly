@@ -24,14 +24,15 @@ class BalancePage extends ConsumerStatefulWidget {
 class _BalancePageState extends ConsumerState<BalancePage> {
   @override
   Widget build(BuildContext context) {
-    final currentFriend = ref.watch(repositoryProvider).selectedFriend;
-    if (currentFriend == null) {
+    ref.watch(repositoryProvider);
+    final selectedFriendId = ref.read(sharedPrefProvider).getString('selectedFriendId');
+    if (selectedFriendId == null) {
       return _buildNoFriendSelected();
     }
-    return _buildFriendBalance(context, currentFriend);
+    return _buildFriendBalance(context);
   }
 
-  Column _buildFriendBalance(BuildContext context, FriendProfile friend) {
+  Column _buildFriendBalance(BuildContext context) {
     return Column(
       children: [
         const SizedBox(
@@ -41,7 +42,7 @@ class _BalancePageState extends ConsumerState<BalancePage> {
         const SizedBox(
           height: 100.0,
         ),
-        _buildBalanceCard(friend),
+        _buildBalanceCard(),
         const Spacer(),
         _trackExpenseButton(context),
         const SizedBox(
@@ -61,14 +62,14 @@ class _BalancePageState extends ConsumerState<BalancePage> {
     );
   }
 
-  Card _buildBalanceCard(FriendProfile selectedFriend) {
+  Card _buildBalanceCard() {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             FutureBuilder<Row>(
-              future: _buildProfileRow(selectedFriend),
+              future: _buildProfileRow(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const CircularProgressIndicator();
@@ -98,9 +99,13 @@ class _BalancePageState extends ConsumerState<BalancePage> {
     );
   }
 
-  Future<Row> _buildProfileRow(FriendProfile selectedFriend) async {
-    final balance = await
-        selectedFriend.calculateBalance(ref.read(repositoryProvider.notifier));
+  Future<Row> _buildProfileRow() async {
+    final selectedFriend = await FriendUtils.getSelectedFriend(ref);
+    if (selectedFriend == null) {
+      throw Exception('No friend selected!');
+    }
+    final balance = await selectedFriend
+        .calculateBalance(ref.read(repositoryProvider.notifier));
     final balanceColor = balance >= 0 ? Colors.green : Colors.red;
     String profileImage = 'assets/profile_pics/profile_picture1.jpg';
     return Row(
@@ -143,7 +148,8 @@ class _BalancePageState extends ConsumerState<BalancePage> {
             height: 10,
           ),
           CircleAvatar(
-            backgroundImage: AssetImage(profile.imageUrl ?? FriendUtils.unknownProfilePicture),
+            backgroundImage: AssetImage(
+                profile.imageUrl ?? FriendUtils.unknownProfilePicture),
             radius: 40,
           ),
           const SizedBox(

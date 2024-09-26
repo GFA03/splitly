@@ -10,15 +10,5 @@ class CurrentFriendData with _$CurrentFriendData {
   const factory CurrentFriendData({
     @Default(<FriendProfile> [...dummyFriendData]) List<FriendProfile> currentFriends,
     @Default(<Expense>[]) List<Expense> currentExpenses,
-    FriendProfile? selectedFriend,
   }) = _CurrentFriendData;
-
-  List<Expense> get selectedFriendExpenses {
-    if (selectedFriend == null) {
-      return [];
-    }
-    return currentExpenses
-        .where((expense) => expense.friendId == selectedFriend!.id)
-        .toList();
-  }
 }

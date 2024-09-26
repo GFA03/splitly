@@ -4,6 +4,7 @@ import 'package:splitly/providers.dart';
 import 'package:splitly/ui/views/expenseForm/expense_form_page.dart';
 import 'package:splitly/data/models/expense.dart';
 import 'package:splitly/utils.dart';
+import 'package:splitly/utils/friend_utils.dart';
 
 class HistoryPage extends ConsumerStatefulWidget {
   const HistoryPage({
@@ -15,41 +16,54 @@ class HistoryPage extends ConsumerStatefulWidget {
 }
 
 class _HistoryPageState extends ConsumerState<HistoryPage> {
-  void deleteExpense(int index) {
-    final repository = ref.read(repositoryProvider.notifier);
-    final currentFriendData = ref.read(repositoryProvider);
-    final expenses = currentFriendData.selectedFriendExpenses;
-
+  void deleteExpense(int index) async {
+    final expenses = await FriendUtils.getSelectedFriendExpenses(ref);
     if (expenses.isEmpty) return;
+
+    final repository = ref.read(repositoryProvider.notifier);
 
     Expense deletedExpense = expenses[index];
     repository.deleteExpense(expenses[index]);
-    showSnackBar(context, '${deletedExpense.name} deleted', 'Undo', () {
-      repository.insertExpense(deletedExpense);
-    });
+    if (mounted){
+      showSnackBar(context, '${deletedExpense.name} deleted', 'Undo', () {
+        repository.insertExpense(deletedExpense);
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final currentFriendData = ref.watch(repositoryProvider);
-
-    if (currentFriendData.selectedFriend == null) {
+    try {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Splitly')),
+        body: FutureBuilder(
+            future: _buildExpensesList(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const CircularProgressIndicator();
+              } else if (snapshot.hasError) {
+                return const Text('Error loading expenses');
+              } else {
+                return snapshot.data ?? const SizedBox.shrink();
+              }
+            }),
+      );
+    } catch (e) {
       return const Scaffold(
-        body: Center(child: Text('No friend selected')),
+        body: Center(child: Text('No friend selected!')),
       );
     }
+  }
 
-    final expenses = currentFriendData.selectedFriendExpenses;
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('Splitly')),
-      body: ListView.builder(
-        itemCount: expenses.length,
-        itemBuilder: (context, index) {
-          int reverseIndex = expenses.length - index - 1;
-          return _buildExpenseItem(reverseIndex, expenses);
-        },
-      ),
+  Future<ListView> _buildExpensesList() async {
+    ref.watch(repositoryProvider);
+    final expenses = await FriendUtils.getSelectedFriendExpenses(ref);
+    return ListView.builder(
+      itemCount: expenses.length,
+      itemBuilder: (context, index) {
+        int reverseIndex = expenses.length - index - 1;
+        return _buildExpenseItem(reverseIndex, expenses);
+      },
     );
   }
 
@@ -196,7 +210,6 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
         const Spacer(),
         IconButton(
           onPressed: () async {
-            final repository = ref.read(repositoryProvider.notifier);
             Navigator.pop(context);
             final editedExpense = await Navigator.push(
               context,
@@ -204,6 +217,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                   builder: (context) => ExpenseFormPage(editExpense: expense)),
             );
 
+            final repository = ref.read(repositoryProvider.notifier);
             if (editedExpense != null) {
               repository.editExpense(expense, editedExpense);
             }

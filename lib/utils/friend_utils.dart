@@ -4,27 +4,38 @@ import 'package:splitly/data/models/friend_profile.dart';
 import 'package:splitly/providers.dart';
 
 class FriendUtils {
-  static String unknownProfilePicture = 'assets/profile_pics/profile_picture6.jpg';
+  static const String unknownProfilePicture =
+      'assets/profile_pics/profile_picture6.jpg';
 
-  // Function to retrieve the selected friend from the repository
-  static FriendProfile? getSelectedFriend(WidgetRef ref) {
-    return ref.watch(repositoryProvider).selectedFriend;
-  }
+  static const String defaultProfileImage =
+      'assets/profile_pics/profile_picture1.jpg';
 
+  // Function to retrieve selected friend's id
   static String getSelectedFriendId(WidgetRef ref) {
-    final selectedFriend = ref.watch(repositoryProvider).selectedFriend;
+    final selectedFriendId =
+        ref.read(sharedPrefProvider).getString('selectedFriendId');
 
-    if (selectedFriend == null) {
+    if (selectedFriendId == null) {
       throw Exception("No selected friend ID found");
     }
 
-    return selectedFriend.id;
+    return selectedFriendId;
+  }
+
+  static void setSelectedFriendId(WidgetRef ref, String id) {
+    ref.read(sharedPrefProvider).setString('selectedFriendId', id);
+  }
+
+  static Future<FriendProfile?> getSelectedFriend(WidgetRef ref) {
+    String selectedFriendId = getSelectedFriendId(ref);
+    final repository = ref.read(repositoryProvider.notifier);
+    return repository.findFriendById(selectedFriendId);
   }
 
   // Function to fetch current friend expenses
   static Future<List<Expense>> getSelectedFriendExpenses(WidgetRef ref) {
-    final repository = ref.read(repositoryProvider.notifier);
     String friendId = getSelectedFriendId(ref);
+    final repository = ref.read(repositoryProvider.notifier);
 
     return repository.findFriendExpenses(friendId);
   }

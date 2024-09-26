@@ -5,6 +5,7 @@ import 'package:splitly/providers.dart';
 import 'package:splitly/ui/views/balance/balance_page.dart';
 import 'package:splitly/ui/views/friends/friends_page.dart';
 import 'package:splitly/ui/views/settings/settings_page.dart';
+import 'package:splitly/utils/friend_utils.dart';
 
 class Home extends ConsumerStatefulWidget {
   const Home({
@@ -46,7 +47,7 @@ class _HomeState extends ConsumerState<Home> {
   ];
 
   void _saveFriend(FriendProfile friend) {
-    ref.read(repositoryProvider.notifier).selectFriend(friend);
+    FriendUtils.setSelectedFriendId(ref, friend.id);
   }
 
   void _saveCurrentIndex() {

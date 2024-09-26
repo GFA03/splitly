@@ -37,12 +37,14 @@ class SettingsPage extends ConsumerWidget {
     final prefs = await SharedPreferences.getInstance();
     bool success = await prefs.clear();
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(success
-            ? 'Shared Preferences cleared successfully!'
-            : 'Failed to clear Shared Preferences'),
-      ),
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(success
+              ? 'Shared Preferences cleared successfully!'
+              : 'Failed to clear Shared Preferences'),
+        ),
+      );
+    });
   }
 }

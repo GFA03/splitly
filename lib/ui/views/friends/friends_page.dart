@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:splitly/providers.dart';
 import 'package:splitly/data/models/friend_profile.dart';
 import 'package:splitly/utils.dart';
+import 'package:splitly/utils/friend_utils.dart';
 
 class FriendsPage extends ConsumerStatefulWidget {
   const FriendsPage({super.key, required this.onFriendSelected});
@@ -14,8 +15,6 @@ class FriendsPage extends ConsumerStatefulWidget {
 }
 
 class _FriendsPageState extends ConsumerState<FriendsPage> {
-  static const String defaultProfileImage =
-      'assets/profile_pics/profile_picture1.jpg';
 
   void _deleteFriend(int index) {
     final friends = ref.watch(repositoryProvider).currentFriends;
@@ -36,7 +35,7 @@ class _FriendsPageState extends ConsumerState<FriendsPage> {
   void _addFriend(String? name) {
     if (name != null && name.isNotEmpty) {
       final newFriend =
-          FriendProfile(name: name, imageUrl: defaultProfileImage);
+          FriendProfile(name: name, imageUrl: FriendUtils.defaultProfileImage);
       ref.read(repositoryProvider.notifier).insertFriend(newFriend);
       showSnackBar(context, '$name added');
       Navigator.of(context).pop();
@@ -53,7 +52,7 @@ class _FriendsPageState extends ConsumerState<FriendsPage> {
       body: ListView.builder(
         itemCount: friends.length,
         itemBuilder: (context, index) {
-          return _buildFriendListItem(index);
+          return _buildFriendListItem(friends[index], index);
         },
       ),
       floatingActionButton: FloatingActionButton(
@@ -101,11 +100,9 @@ class _FriendsPageState extends ConsumerState<FriendsPage> {
     );
   }
 
-  Dismissible _buildFriendListItem(int index) {
-    final repository = ref.watch(repositoryProvider);
-    final friends = repository.currentFriends;
+  Dismissible _buildFriendListItem(FriendProfile friend, int index) {
     return Dismissible(
-      key: Key(friends[index].name),
+      key: Key(friend.name),
       direction: DismissDirection.endToStart,
       onDismissed: (direction) {
         _deleteFriend(index);
@@ -120,9 +117,9 @@ class _FriendsPageState extends ConsumerState<FriendsPage> {
         ),
       ),
       child: GestureDetector(
-        onTap: () => widget.onFriendSelected(friends[index]),
+        onTap: () => widget.onFriendSelected(friend),
         child: _buildFriendCard(
-          friend: friends[index],
+          friend: friend,
         ),
       ),
     );

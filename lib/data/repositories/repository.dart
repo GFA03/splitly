@@ -9,13 +9,11 @@ abstract class Repository {
 
   Future<Expense> findExpenseById(String id);
 
-  Future<FriendProfile> findFriendById(String id);
+  Future<FriendProfile?> findFriendById(String id);
 
   Future<List<Expense>> findAllExpenses();
 
   Future<List<Expense>> findFriendExpenses(String friendId);
-
-  Future<void> selectFriend(FriendProfile friend);
 
   Future<int> insertFriend(FriendProfile friend);
 
