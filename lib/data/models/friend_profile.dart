@@ -3,17 +3,31 @@ import 'package:uuid/uuid.dart';
 import '../repositories/repository.dart';
 
 class FriendProfile {
-  const FriendProfile.create({required this.id, required this.name, this.imageUrl});
+  // Factory constructor to create with a specific ID
+  const FriendProfile.create({required String id, required String name, String? imageUrl})
+      : _id = id,
+        _name = name,
+        _imageUrl = imageUrl;
 
-  FriendProfile({String? id, required this.name, this.imageUrl})
-      : id = id ?? const Uuid().v4();
+  // Constructor to auto-generate an ID if not provided
+  FriendProfile({String? id, required String name, String? imageUrl})
+      : _id = id ?? const Uuid().v4(),
+        _name = name,
+        _imageUrl = imageUrl;
 
-  final String id;
-  final String name;
-  final String? imageUrl;
+  final String _id;
+  final String _name;
+  final String? _imageUrl;
 
+  String get id => _id;
+
+  String get name => _name;
+
+  String? get imageUrl => _imageUrl;
+
+  // Calculate balance for this profile
   Future<double> calculateBalance(Repository repository) async {
-    final expenses = await repository.findFriendExpenses(id);
+    final expenses = await repository.findFriendExpenses(_id);
     if (expenses.isEmpty) {
       return 0;
     }
@@ -21,6 +35,7 @@ class FriendProfile {
         0, (previousValue, element) => previousValue + element.balance);
   }
 }
+
 
 const List<FriendProfile> dummyFriendData = [
   FriendProfile.create(
