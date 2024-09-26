@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:splitly/data/models/expense.dart';
-import 'package:splitly/providers.dart';
 import 'package:splitly/ui/components/button/outlined_button.dart';
 import 'package:splitly/ui/components/textfield/filled_text_field.dart';
+import 'package:splitly/utils/friend_utils.dart';
 import 'package:splitly/utils/validators.dart';
 
 class ExpenseFormPage extends ConsumerStatefulWidget {
@@ -46,11 +46,7 @@ class _ExpenseFormPageState extends ConsumerState<ExpenseFormPage> {
   }
 
   void _handleSubmit() {
-    final selectedFriend = ref.read(repositoryProvider).selectedFriend;
-
-    if (selectedFriend == null) {
-      throw ArgumentError('There is no friend selected!');
-    }
+    final selectedFriendId = FriendUtils.getSelectedFriendId(ref);
 
     if (_formKey.currentState!.validate()) {
       setState(() {
@@ -64,6 +60,7 @@ class _ExpenseFormPageState extends ConsumerState<ExpenseFormPage> {
       }
 
       final newExpense = Expense(
+        id: widget.editExpense?.id,
         name: expenseName!,
         description: description,
         date: date,
@@ -71,12 +68,8 @@ class _ExpenseFormPageState extends ConsumerState<ExpenseFormPage> {
         shouldBePaidByFriend: friendConsumption!,
         paidByUser: paidByUser!,
         paidByFriend: paidByFriend!,
-        friendId: selectedFriend.id,
+        friendId: selectedFriendId,
       );
-
-      if (widget.editExpense != null) {
-        newExpense.id = widget.editExpense!.id;
-      }
 
       Navigator.pop(context, newExpense);
 
