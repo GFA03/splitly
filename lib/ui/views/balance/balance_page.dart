@@ -25,8 +25,8 @@ class _BalancePageState extends ConsumerState<BalancePage> {
   @override
   Widget build(BuildContext context) {
     ref.watch(repositoryProvider);
-    final selectedFriendId = ref.read(sharedPrefProvider).getString('selectedFriendId');
-    if (selectedFriendId == null) {
+    final selectedFriend = FriendUtils.getSelectedFriend(ref);
+    if (selectedFriend == null) {
       return _buildNoFriendSelected();
     }
     return _buildFriendBalance(context);
@@ -100,7 +100,7 @@ class _BalancePageState extends ConsumerState<BalancePage> {
   }
 
   Future<Row> _buildProfileRow() async {
-    final selectedFriend = await FriendUtils.getSelectedFriend(ref);
+    final selectedFriend = FriendUtils.getSelectedFriend(ref);
     if (selectedFriend == null) {
       throw Exception('No friend selected!');
     }

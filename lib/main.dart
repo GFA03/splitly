@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:splitly/providers.dart';
-import 'package:splitly/ui/home.dart';
+import 'package:splitly/ui/main_screen.dart';
+import 'package:splitly/ui/theme/theme.dart';
 
 Future<void> main() async {
-
   WidgetsFlutterBinding.ensureInitialized();
   final sharedPrefs = await SharedPreferences.getInstance();
 
@@ -25,34 +26,50 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  ThemeMode themeMode = ThemeMode.light;
-
-  void changeThemeMode(bool useLightMode) {
-    setState(() {
-      themeMode = useLightMode ? ThemeMode.light : ThemeMode.dark;
-    });
-  }
+  ThemeMode currentMode = ThemeMode.light;
 
   @override
   Widget build(BuildContext context) {
-    const appTitle = 'Splitly';
-    const String name = 'John Doe';
-
-    return MaterialApp(
-        title: appTitle,
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          useMaterial3: true,
-          brightness: Brightness.light,
-        ),
-        darkTheme: ThemeData(
-          useMaterial3: true,
-          brightness: Brightness.dark,
-        ),
-        home: Home(
-          appTitle: appTitle,
-          changeTheme: changeThemeMode,
-          name: name,
-        ));
+    return PlatformMenuBar(
+      menus: [
+        PlatformMenu(label: 'File', menus: [
+          PlatformMenuItem(
+              label: 'Dark Mode',
+              onSelected: () {
+                setState(() {
+                  currentMode = ThemeMode.dark;
+                });
+              }),
+          PlatformMenuItem(
+              label: 'Light Mode',
+              onSelected: () {
+                setState(() {
+                  currentMode = ThemeMode.light;
+                });
+              }),
+          PlatformMenuItem(
+            label: 'Quit',
+            onSelected: () {
+              setState(() {
+                SystemNavigator.pop();
+              });
+            },
+          ),
+        ])
+      ],
+      child: MaterialApp(
+          title: 'Splitly',
+          debugShowCheckedModeBanner: false,
+          themeMode: currentMode,
+          theme: ThemeData(
+            useMaterial3: true,
+            colorScheme: lightColorScheme,
+          ),
+          darkTheme: ThemeData(
+            useMaterial3: true,
+            colorScheme: darkColorScheme,
+          ),
+          home: const MainScreen()),
+    );
   }
 }

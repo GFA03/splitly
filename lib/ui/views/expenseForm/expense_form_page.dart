@@ -46,7 +46,11 @@ class _ExpenseFormPageState extends ConsumerState<ExpenseFormPage> {
   }
 
   void _handleSubmit() {
-    final selectedFriendId = FriendUtils.getSelectedFriendId(ref);
+    final selectedFriend = FriendUtils.getSelectedFriend(ref);
+
+    if (selectedFriend == null) {
+      throw Exception('No friend selected');
+    }
 
     if (_formKey.currentState!.validate()) {
       setState(() {
@@ -68,7 +72,7 @@ class _ExpenseFormPageState extends ConsumerState<ExpenseFormPage> {
         shouldBePaidByFriend: friendConsumption!,
         paidByUser: paidByUser!,
         paidByFriend: paidByFriend!,
-        friendId: selectedFriendId,
+        friendId: selectedFriend.id,
       );
 
       Navigator.pop(context, newExpense);
