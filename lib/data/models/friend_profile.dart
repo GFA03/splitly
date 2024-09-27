@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
 import '../repositories/repository.dart';
@@ -33,6 +34,18 @@ class FriendProfile {
     }
     return expenses.fold<double>(
         0, (previousValue, element) => previousValue + element.balance);
+  }
+}
+
+class SelectedFriendNotifier extends StateNotifier<FriendProfile?> {
+  SelectedFriendNotifier(): super(null);
+
+  void setSelectedFriend(FriendProfile friend) {
+    state = friend;
+  }
+
+  void removeSelectedFriend() {
+    state = null;
   }
 }
 

@@ -6,9 +6,7 @@ import 'package:splitly/utils.dart';
 import 'package:splitly/utils/friend_utils.dart';
 
 class FriendsPage extends ConsumerStatefulWidget {
-  const FriendsPage({super.key, required this.onFriendSelected});
-
-  final void Function(FriendProfile) onFriendSelected;
+  const FriendsPage({super.key});
 
   @override
   ConsumerState createState() => _FriendsPageState();
@@ -20,6 +18,10 @@ class _FriendsPageState extends ConsumerState<FriendsPage> {
     final friends = ref.watch(repositoryProvider).currentFriends;
     final deletedFriend = friends[index];
     ref.read(repositoryProvider.notifier).deleteFriend(friends[index]);
+
+    if (ref.read(selectedFriendProvider) == deletedFriend) {
+      ref.read(selectedFriendProvider.notifier).removeSelectedFriend();
+    }
 
     // TODO: add the friend back on their last index
     showSnackBar(context, '${deletedFriend.name} deleted', 'Undo', () {
@@ -117,7 +119,11 @@ class _FriendsPageState extends ConsumerState<FriendsPage> {
         ),
       ),
       child: GestureDetector(
-        onTap: () => widget.onFriendSelected(friend),
+        onTap: () {
+          FriendUtils.setSelectedFriend(ref, friend);
+          ref.read(bottomNavigationProvider.notifier).updateSelectedIndex(0);
+          //todo: use theme context everywhere instead of hard coded values
+        },
         child: _buildFriendCard(
           friend: friend,
         ),

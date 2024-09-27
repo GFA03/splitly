@@ -11,32 +11,27 @@ class FriendUtils {
       'assets/profile_pics/profile_picture1.jpg';
 
   // Function to retrieve selected friend's id
-  static String getSelectedFriendId(WidgetRef ref) {
-    final selectedFriendId =
-        ref.read(sharedPrefProvider).getString('selectedFriendId');
+  static FriendProfile? getSelectedFriend(WidgetRef ref) {
+    final selectedFriend =
+        ref.watch(selectedFriendProvider);
 
-    if (selectedFriendId == null) {
-      throw Exception("No selected friend ID found");
-    }
-
-    return selectedFriendId;
+    return selectedFriend;
   }
 
-  static void setSelectedFriendId(WidgetRef ref, String id) {
-    ref.read(sharedPrefProvider).setString('selectedFriendId', id);
-  }
-
-  static Future<FriendProfile?> getSelectedFriend(WidgetRef ref) {
-    String selectedFriendId = getSelectedFriendId(ref);
-    final repository = ref.read(repositoryProvider.notifier);
-    return repository.findFriendById(selectedFriendId);
+  static void setSelectedFriend(WidgetRef ref, FriendProfile friend) {
+    ref.read(selectedFriendProvider.notifier).setSelectedFriend(friend);
   }
 
   // Function to fetch current friend expenses
   static Future<List<Expense>> getSelectedFriendExpenses(WidgetRef ref) {
-    String friendId = getSelectedFriendId(ref);
+    final selectedFriend = getSelectedFriend(ref);
+
+    if (selectedFriend == null) {
+      throw Exception('No friend selected!');
+    }
+
     final repository = ref.read(repositoryProvider.notifier);
 
-    return repository.findFriendExpenses(friendId);
+    return repository.findFriendExpenses(selectedFriend.id);
   }
 }
