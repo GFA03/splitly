@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:splitly/providers.dart';
@@ -30,46 +29,18 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return PlatformMenuBar(
-      menus: [
-        PlatformMenu(label: 'File', menus: [
-          PlatformMenuItem(
-              label: 'Dark Mode',
-              onSelected: () {
-                setState(() {
-                  currentMode = ThemeMode.dark;
-                });
-              }),
-          PlatformMenuItem(
-              label: 'Light Mode',
-              onSelected: () {
-                setState(() {
-                  currentMode = ThemeMode.light;
-                });
-              }),
-          PlatformMenuItem(
-            label: 'Quit',
-            onSelected: () {
-              setState(() {
-                SystemNavigator.pop();
-              });
-            },
-          ),
-        ])
-      ],
-      child: MaterialApp(
-          title: 'Splitly',
-          debugShowCheckedModeBanner: false,
-          themeMode: currentMode,
-          theme: ThemeData(
-            useMaterial3: true,
-            colorScheme: lightColorScheme,
-          ),
-          darkTheme: ThemeData(
-            useMaterial3: true,
-            colorScheme: darkColorScheme,
-          ),
-          home: const MainScreen()),
-    );
+    return MaterialApp(
+        title: 'Splitly',
+        debugShowCheckedModeBanner: false,
+        themeMode: currentMode,
+        theme: ThemeData(
+          useMaterial3: true,
+          colorScheme: lightColorScheme,
+        ),
+        darkTheme: ThemeData(
+          useMaterial3: true,
+          colorScheme: darkColorScheme,
+        ),
+        home: const MainScreen());
   }
 }

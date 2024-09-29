@@ -20,18 +20,34 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
   static const String prefSelectedIndexKey = 'selectedIndex';
 
+  // Lazy-loaded list of pages
+  final List<Widget> _pages = [
+    const BalancePage(name: 'John Doe'),
+    const FriendsPage(),
+    const SettingsPage(),
+  ];
+
   @override
   void initState() {
     super.initState();
-    pageList.add(const BalancePage(name: 'John Doe'));
-    pageList.add(const FriendsPage());
-    pageList.add(const SettingsPage());
+    _restoreSavedIndex();
+  }
+
+  // Restore saved bottom navigation index
+  Future<void> _restoreSavedIndex() async {
+    final prefs = ref.read(sharedPrefProvider);
+    final savedIndex = prefs.getInt(prefSelectedIndexKey) ?? 0;
+
+    // Schedule provider modification after the build is complete
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(bottomNavigationProvider.notifier).updateSelectedIndex(savedIndex);
+    });
   }
 
   void _saveCurrentIndex() {
     final prefs = ref.read(sharedPrefProvider);
-    final bottomNavigation = ref.read(bottomNavigationProvider);
-    prefs.setInt(prefSelectedIndexKey, bottomNavigation.selectedIndex);
+    final selectedIndex = ref.read(bottomNavigationProvider).selectedIndex;
+    prefs.setInt(prefSelectedIndexKey, selectedIndex);
   }
 
   void _onItemTapped(int index) {
@@ -41,47 +57,95 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final selectedIndex = ref.watch(bottomNavigationProvider).selectedIndex;
+
     return Scaffold(
-      // avoid overflow issue when going back to home page with mobile keyboard opened
-      resizeToAvoidBottomInset: false,
-      bottomNavigationBar: _createBottomNavigationBar(),
+      appBar: _buildAppBar(context),
+      resizeToAvoidBottomInset: false, // Prevent keyboard from shifting layout
+      bottomNavigationBar: MainBottomNavigationBar(
+        currentIndex: selectedIndex,
+        onItemTapped: _onItemTapped,
+      ),
       body: SafeArea(
-          child: IndexedStack(
-        index: ref.watch(bottomNavigationProvider).selectedIndex,
-        children: pageList,
-      )),
+        child: IndexedStack(
+          index: selectedIndex,
+          children: _pages,
+        ),
+      ),
     );
   }
 
-  BottomNavigationBar _createBottomNavigationBar() {
+  AppBar _buildAppBar(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    return AppBar(
+      title: const Text(
+        'Splitly',
+        style: TextStyle(
+          fontSize: 20.0,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      backgroundColor:
+          isDarkMode ? darkBackgroundColor : lightBackgroundColor,
+      centerTitle: true,
+      elevation: 0,
+      iconTheme: IconThemeData(color: isDarkMode ? Colors.white : Colors.black),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.notifications),
+          onPressed: () {
+            // Add any notification action here
+          },
+        ),
+      ],
+    );
+  }
+}
+
+// Extracted BottomNavigationBar Widget
+class MainBottomNavigationBar extends StatelessWidget {
+  const MainBottomNavigationBar({
+    super.key,
+    required this.currentIndex,
+    required this.onItemTapped,
+  });
+
+  final int currentIndex;
+  final Function(int) onItemTapped;
+
+  @override
+  Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final selectedColor = isDarkMode ? Colors.white : Colors.black;
     final backgroundColor =
         isDarkMode ? darkBackgroundColor : smallCardBackgroundColor;
-    final bottomNavigationIndex =
-        ref.watch(bottomNavigationProvider).selectedIndex;
+
     return BottomNavigationBar(
       backgroundColor: backgroundColor,
-      currentIndex: bottomNavigationIndex,
+      currentIndex: currentIndex,
       selectedItemColor: selectedColor,
       unselectedItemColor: Colors.grey,
-      items: [
-        const BottomNavigationBarItem(
-          icon: Icon(Icons.balance),
-          label: 'Balance',
-        ),
-        BottomNavigationBarItem(
-          icon: const Icon(Icons.people),
-          backgroundColor:
-              bottomNavigationIndex == 1 ? iconBackgroundColor : Colors.black,
-          label: 'Friends',
-        ),
-        const BottomNavigationBarItem(
-          icon: Icon(Icons.settings),
-          label: 'Settings',
-        ),
-      ],
-      onTap: _onItemTapped,
+      items: _bottomNavigationItems(currentIndex),
+      onTap: onItemTapped,
     );
+  }
+
+  List<BottomNavigationBarItem> _bottomNavigationItems(int currentIndex) {
+    return [
+      const BottomNavigationBarItem(
+        icon: Icon(Icons.balance),
+        label: 'Balance',
+      ),
+      BottomNavigationBarItem(
+        icon: const Icon(Icons.people),
+        backgroundColor: currentIndex == 1 ? iconBackgroundColor : Colors.black,
+        label: 'Friends',
+      ),
+      const BottomNavigationBarItem(
+        icon: Icon(Icons.settings),
+        label: 'Settings',
+      ),
+    ];
   }
 }
