@@ -119,7 +119,7 @@ class MainBottomNavigationBar extends StatelessWidget {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final selectedColor = isDarkMode ? Colors.white : Colors.black;
     final backgroundColor =
-        isDarkMode ? darkBackgroundColor : smallCardBackgroundColor;
+        isDarkMode ? darkBackgroundColor : lightBackgroundColor;
 
     return BottomNavigationBar(
       backgroundColor: backgroundColor,
