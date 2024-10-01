@@ -1,4 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:splitly/data/models/expense.dart';
 import 'package:splitly/data/models/friend_profile.dart';
 import 'package:splitly/providers.dart';
@@ -107,12 +111,11 @@ class _BalancePageState extends ConsumerState<BalancePage> {
     final balance = await selectedFriend
         .calculateBalance(ref.read(repositoryProvider.notifier));
     final balanceColor = balance >= 0 ? Colors.green : Colors.red;
-    String profileImage = 'assets/profile_pics/profile_picture1.jpg';
+    // String profileImage = '/home/gfa/projects/splitly/assets/profile_pics/profile_picture1.jpg';
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        _buildProfileCard(
-            profile: FriendProfile(name: 'You', imageUrl: profileImage)),
+        _buildProfileCard(profile: FriendProfile(name: 'You')),
         // TODO: add currency option (and you should call an API to convert the selected currency to the settings selected currency
         Text(
           'Balance: ${balance.toStringAsFixed(2)}\$',
@@ -148,8 +151,9 @@ class _BalancePageState extends ConsumerState<BalancePage> {
             height: 10,
           ),
           CircleAvatar(
-            backgroundImage: AssetImage(
-                profile.imageUrl ?? FriendUtils.unknownProfilePicture),
+            backgroundImage: profile.imageUrl == null
+                ? const AssetImage(FriendUtils.defaultProfileImage)
+                : FileImage(profile.imageUrl!),
             radius: 40,
           ),
           const SizedBox(
@@ -157,7 +161,9 @@ class _BalancePageState extends ConsumerState<BalancePage> {
           ),
           Text(profile.name),
           TextButton(
-            onPressed: () {},
+            onPressed: () async {
+              showImagePickerOptions(context);
+            },
             child: Text(
               'Change picture',
               style: textTheme.apply(displayColor: Colors.purple).bodySmall,
@@ -166,6 +172,102 @@ class _BalancePageState extends ConsumerState<BalancePage> {
         ],
       ),
     );
+  }
+
+  void showImagePickerOptions(BuildContext context) {
+    showModalBottomSheet(
+        backgroundColor: Colors.blue[100],
+        context: context,
+        builder: (builder) {
+          return Padding(
+            padding: const EdgeInsets.all(18.0),
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height / 4.5,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: InkWell(
+                      onTap: () {
+                        _changeFriendPictureFromGallery();
+                        Navigator.of(context).pop();
+                      },
+                      child: const SizedBox(
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.image,
+                              size: 70,
+                            ),
+                            Text("Gallery")
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: InkWell(
+                      onTap: () {
+                        _changeFriendPictureFromCamera();
+                        Navigator.of(context).pop();
+                      },
+                      child: const SizedBox(
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.camera_alt,
+                              size: 70,
+                            ),
+                            Text("Camera")
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        });
+  }
+
+  Future _changeFriendPictureFromGallery() async {
+    final File? selectedImage = await _pickImageFromGallery();
+    if (selectedImage == null) {
+      return;
+    }
+    _changePicture(selectedImage);
+  }
+
+//Gallery
+  Future<File?> _pickImageFromGallery() async {
+    final image = await ImagePicker().pickImage(source: ImageSource.gallery);
+    return image == null ? null : File(image.path);
+  }
+
+  Future _changeFriendPictureFromCamera() async {
+    final File? selectedImage = await _pickImageFromCamera();
+    if (selectedImage == null) {
+      return;
+    }
+    _changePicture(selectedImage);
+  }
+
+//Camera
+  Future _pickImageFromCamera() async {
+    final image = await ImagePicker().pickImage(source: ImageSource.camera);
+    return image == null ? null : File(image.path);
+  }
+
+  Future _changePicture(File selectedImage) async {
+    final Directory dir = await getApplicationDocumentsDirectory();
+    List<String> pathSegments = selectedImage.path.split('/');
+    String imageName = pathSegments.last;
+    final File newImage = await selectedImage.copy('${dir.path}/$imageName');
+    final profile = ref.watch(selectedFriendProvider);
+    ref.read(repositoryProvider.notifier).editFriendPicture(profile!, newImage);
+    final updatedFriend = await ref.read(repositoryProvider.notifier).findFriendById(profile.id);
+    ref.read(selectedFriendProvider.notifier).setSelectedFriend(updatedFriend!);
   }
 
   Widget _buildNoExpensesCard() {

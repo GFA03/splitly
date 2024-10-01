@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:collection/collection.dart';
@@ -98,6 +99,20 @@ class MemoryRepository extends Notifier<CurrentFriendData>
     final updatedFriends = state.currentFriends.map((f) {
       if (f.id == friend.id) {
         return FriendProfile(id: f.id, name: newName, imageUrl: f.imageUrl);
+      }
+      return f;
+    }).toList();
+
+    state = state.copyWith(currentFriends: updatedFriends);
+    _friendStreamController.sink.add(state.currentFriends);
+    return Future.value();
+  }
+
+  @override
+  Future<void> editFriendPicture(FriendProfile friend, File newPicture) {
+    final updatedFriends = state.currentFriends.map((f) {
+      if (f.id == friend.id) {
+        return FriendProfile(id: f.id, name: f.name, imageUrl: newPicture);
       }
       return f;
     }).toList();

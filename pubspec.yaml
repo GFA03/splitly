@@ -44,6 +44,8 @@ dependencies:
   json_annotation: ^4.9.0
   flutter_colorpicker: ^1.1.0
   collection: any
+  image_picker: ^1.0.0
+  path_provider: ^2.1.4
 
 dev_dependencies:
   flutter_test:

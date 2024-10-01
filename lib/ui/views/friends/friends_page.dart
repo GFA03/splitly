@@ -37,7 +37,7 @@ class _FriendsPageState extends ConsumerState<FriendsPage> {
   void _addFriend(String? name) {
     if (name != null && name.isNotEmpty) {
       final newFriend =
-          FriendProfile(name: name, imageUrl: FriendUtils.defaultProfileImage);
+          FriendProfile(name: name);
       ref.read(repositoryProvider.notifier).insertFriend(newFriend);
       showSnackBar(context, '$name added');
       Navigator.of(context).pop();
@@ -146,8 +146,7 @@ class _FriendsPageState extends ConsumerState<FriendsPage> {
     return Row(
       children: [
         CircleAvatar(
-            backgroundImage: AssetImage(
-                friend.imageUrl ?? 'assets/profile_pics/profile_picture6.jpg'),
+            backgroundImage: friend.imageUrl == null ? const AssetImage(FriendUtils.defaultProfileImage) : FileImage(friend.imageUrl!),
             radius: 25),
         const SizedBox(width: 15.0),
         Text(friend.name),

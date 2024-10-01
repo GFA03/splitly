@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import '../models/models.dart';
 
 abstract class Repository {
@@ -20,6 +22,8 @@ abstract class Repository {
   Future<int> insertExpense(Expense expense);
 
   Future<void> editFriendName(FriendProfile friend, String newName);
+
+  Future<void> editFriendPicture(FriendProfile friend, File newPicture);
 
   Future<void> editExpense(Expense oldExpense, Expense newExpense);
 
