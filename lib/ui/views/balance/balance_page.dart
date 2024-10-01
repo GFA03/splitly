@@ -151,9 +151,9 @@ class _BalancePageState extends ConsumerState<BalancePage> {
             height: 10,
           ),
           CircleAvatar(
-            backgroundImage: profile.imageUrl == null
+            backgroundImage: profile.profilePicture == null
                 ? const AssetImage(FriendUtils.defaultProfileImage)
-                : FileImage(profile.imageUrl!),
+                : FileImage(profile.profilePicture!),
             radius: 40,
           ),
           const SizedBox(
@@ -266,6 +266,7 @@ class _BalancePageState extends ConsumerState<BalancePage> {
     final File newImage = await selectedImage.copy('${dir.path}/$imageName');
     final profile = ref.watch(selectedFriendProvider);
     ref.read(repositoryProvider.notifier).editFriendPicture(profile!, newImage);
+    //todo: maybe look over this spaghetti selected friend provider
     final updatedFriend = await ref.read(repositoryProvider.notifier).findFriendById(profile.id);
     ref.read(selectedFriendProvider.notifier).setSelectedFriend(updatedFriend!);
   }

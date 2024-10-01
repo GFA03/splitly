@@ -8,7 +8,7 @@ class CurrentFriendData with _$CurrentFriendData {
   const CurrentFriendData._();
 
   const factory CurrentFriendData({
-    @Default(<FriendProfile> []) List<FriendProfile> currentFriends,
+    @Default(<FriendProfile> [...dummyFriendData]) List<FriendProfile> currentFriends,
     @Default(<Expense>[]) List<Expense> currentExpenses,
   }) = _CurrentFriendData;
 }

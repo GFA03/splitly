@@ -98,7 +98,7 @@ class MemoryRepository extends Notifier<CurrentFriendData>
   Future<void> editFriendName(FriendProfile friend, String newName) {
     final updatedFriends = state.currentFriends.map((f) {
       if (f.id == friend.id) {
-        return FriendProfile(id: f.id, name: newName, imageUrl: f.imageUrl);
+        return FriendProfile(id: f.id, name: newName, profilePicture: f.profilePicture);
       }
       return f;
     }).toList();
@@ -112,7 +112,7 @@ class MemoryRepository extends Notifier<CurrentFriendData>
   Future<void> editFriendPicture(FriendProfile friend, File newPicture) {
     final updatedFriends = state.currentFriends.map((f) {
       if (f.id == friend.id) {
-        return FriendProfile(id: f.id, name: f.name, imageUrl: newPicture);
+        return FriendProfile(id: f.id, name: f.name, profilePicture: newPicture);
       }
       return f;
     }).toList();
