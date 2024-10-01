@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
@@ -8,26 +7,26 @@ import '../repositories/repository.dart';
 class FriendProfile {
   // Factory constructor to create with a specific ID
   const FriendProfile.create(
-      {required String id, required String name, File? profilePicture})
+      {required String id, required String name, String? profilePicture})
       : _id = id,
         _name = name,
         _profilePicture = profilePicture;
 
   // Constructor to auto-generate an ID if not provided
-  FriendProfile({String? id, required String name, File? profilePicture})
+  FriendProfile({String? id, required String name, String? profilePicture})
       : _id = id ?? const Uuid().v4(),
         _name = name,
         _profilePicture = profilePicture;
 
   final String _id;
   final String _name;
-  final File? _profilePicture;
+  final String? _profilePicture;
 
   String get id => _id;
 
   String get name => _name;
 
-  File? get profilePicture => _profilePicture;
+  String? get profilePicture => _profilePicture;
 
   // Calculate balance for this profile
   Future<double> calculateBalance(Repository repository) async {

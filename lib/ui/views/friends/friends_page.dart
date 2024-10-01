@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:splitly/providers.dart';
@@ -146,7 +148,7 @@ class _FriendsPageState extends ConsumerState<FriendsPage> {
     return Row(
       children: [
         CircleAvatar(
-            backgroundImage: friend.profilePicture == null ? const AssetImage(FriendUtils.defaultProfileImage) : FileImage(friend.profilePicture!),
+            backgroundImage: friend.profilePicture == null ? const AssetImage(FriendUtils.defaultProfileImage) : FileImage(File(friend.profilePicture!)),
             radius: 25),
         const SizedBox(width: 15.0),
         Text(friend.name),
