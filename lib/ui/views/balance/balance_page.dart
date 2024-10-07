@@ -28,8 +28,7 @@ class BalancePage extends ConsumerStatefulWidget {
 class _BalancePageState extends ConsumerState<BalancePage> {
   @override
   Widget build(BuildContext context) {
-    ref.watch(repositoryProvider);
-    final selectedFriend = FriendUtils.getSelectedFriend(ref);
+    final selectedFriend = ref.watch(selectedFriendProvider);
     if (selectedFriend == null) {
       return _buildNoFriendSelected();
     }

@@ -15,19 +15,19 @@ class FriendsPage extends ConsumerStatefulWidget {
 }
 
 class _FriendsPageState extends ConsumerState<FriendsPage> {
+  late Stream<List<FriendProfile>> friendStream;
 
-  void _deleteFriend(int index) {
-    final friends = ref.watch(repositoryProvider).currentFriends;
-    final deletedFriend = friends[index];
-    ref.read(repositoryProvider.notifier).deleteFriend(friends[index]);
+  void _deleteFriend(FriendProfile friend) {
+    final repository = ref.read(repositoryProvider.notifier);
+    repository.deleteFriend(friend);
 
-    if (ref.read(selectedFriendProvider) == deletedFriend) {
+    if (ref.read(selectedFriendProvider) == friend) {
       ref.read(selectedFriendProvider.notifier).removeSelectedFriend();
     }
 
     // TODO: add the friend back on their last index
-    showSnackBar(context, '${deletedFriend.name} deleted', 'Undo', () {
-      ref.read(repositoryProvider.notifier).insertFriend(deletedFriend);
+    showSnackBar(context, '${friend.name} deleted', 'Undo', () {
+      ref.read(repositoryProvider.notifier).insertFriend(friend);
     });
   }
 
@@ -49,16 +49,32 @@ class _FriendsPageState extends ConsumerState<FriendsPage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+
+    final repository = ref.read(repositoryProvider.notifier);
+    friendStream = repository.watchAllFriends();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final repository = ref.watch(repositoryProvider);
-    final friends = repository.currentFriends;
     return Scaffold(
-      body: ListView.builder(
-        itemCount: friends.length,
-        itemBuilder: (context, index) {
-          return _buildFriendListItem(friends[index], index);
-        },
-      ),
+      body: StreamBuilder(stream: friendStream, builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator();
+        } else if (snapshot.hasError) {
+          return const Text('Error loading expenses');
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty){
+          return const Text('No expenses available');
+        } else {
+          return ListView.builder(
+            itemCount: snapshot.data!.length,
+            itemBuilder: (context, index) {
+              return _buildFriendListItem(snapshot.data![index]);
+            },
+          );
+        }
+      }),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           _showAddFriendDialog(context);
@@ -104,12 +120,12 @@ class _FriendsPageState extends ConsumerState<FriendsPage> {
     );
   }
 
-  Dismissible _buildFriendListItem(FriendProfile friend, int index) {
+  Dismissible _buildFriendListItem(FriendProfile friend) {
     return Dismissible(
       key: Key(friend.name),
       direction: DismissDirection.endToStart,
       onDismissed: (direction) {
-        _deleteFriend(index);
+        _deleteFriend(friend);
       },
       background: Container(
         color: Colors.red,
