@@ -50,6 +50,14 @@ class MemoryRepository extends Notifier<CurrentFriendData>
   }
 
   @override
+  Stream<List<Expense>> watchFriendExpenses(String friendId) {
+    return _expenseStream.map((expenses) =>
+        expenses.where((expense) => expense.friendId == friendId).toList()
+    );
+  }
+
+
+  @override
   Future<List<FriendProfile>> findAllFriends() {
     return Future.value(state.currentFriends);
   }

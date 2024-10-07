@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:splitly/providers.dart';
@@ -16,17 +18,32 @@ class HistoryPage extends ConsumerStatefulWidget {
 }
 
 class _HistoryPageState extends ConsumerState<HistoryPage> {
-  void deleteExpense(int index) async {
-    final expenses = await FriendUtils.getSelectedFriendExpenses(ref);
-    if (expenses.isEmpty) return;
+  late Stream<List<Expense>> expenseStream;
+  late String selectedFriendId;
+
+  @override
+  void initState() {
+    super.initState();
+
+    final selectedFriend = FriendUtils.getSelectedFriend(ref);
+    if (selectedFriend == null) {
+      throw Exception('No friend selected!');
+    }
+
+    selectedFriendId = selectedFriend.id;
 
     final repository = ref.read(repositoryProvider.notifier);
+    expenseStream = repository.watchFriendExpenses(selectedFriendId);
+  }
 
-    Expense deletedExpense = expenses[index];
-    repository.deleteExpense(expenses[index]);
+  void deleteExpense(Expense expense) async {
+    //todo: save index of deleted expense
+    final repository = ref.read(repositoryProvider.notifier);
+    repository.deleteExpense(expense);
+
     if (mounted){
-      showSnackBar(context, '${deletedExpense.name} deleted', 'Undo', () {
-        repository.insertExpense(deletedExpense);
+      showSnackBar(context, '${expense.name} deleted', 'Undo', () {
+        repository.insertExpense(expense);
       });
     }
   }
@@ -36,15 +53,23 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
     try {
       return Scaffold(
         appBar: AppBar(title: const Text('Splitly')),
-        body: FutureBuilder(
-            future: _buildExpensesList(),
+        body: StreamBuilder(
+          stream: expenseStream,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const CircularProgressIndicator();
               } else if (snapshot.hasError) {
                 return const Text('Error loading expenses');
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty){
+                return const Text('No expenses available');
               } else {
-                return snapshot.data ?? const SizedBox.shrink();
+                return ListView.builder(
+                  itemCount: snapshot.data!.length,
+                  itemBuilder: (context, index) {
+                    int reverseIndex = snapshot.data!.length - index - 1;
+                    return _buildExpenseItem(snapshot.data![reverseIndex]);
+                  },
+                );
               }
             }),
       );
@@ -62,18 +87,17 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
       itemCount: expenses.length,
       itemBuilder: (context, index) {
         int reverseIndex = expenses.length - index - 1;
-        return _buildExpenseItem(reverseIndex, expenses);
+        return _buildExpenseItem(expenses[reverseIndex]);
       },
     );
   }
 
-  Dismissible _buildExpenseItem(int index, List<Expense> expenses) {
-    Expense expense = expenses[index];
+  Dismissible _buildExpenseItem(Expense expense) {
     return Dismissible(
       key: Key(expense.id),
       direction: DismissDirection.endToStart,
       onDismissed: (_) {
-        deleteExpense(index);
+        deleteExpense(expense);
       },
       background: _buildDeleteBackground(),
       child: GestureDetector(
