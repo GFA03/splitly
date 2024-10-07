@@ -13,7 +13,7 @@ class FriendUtils {
   // Function to retrieve selected friend's id
   static FriendProfile? getSelectedFriend(WidgetRef ref) {
     final selectedFriend =
-        ref.watch(selectedFriendProvider);
+        ref.read(selectedFriendProvider);
 
     return selectedFriend;
   }
