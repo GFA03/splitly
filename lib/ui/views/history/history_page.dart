@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:splitly/providers.dart';
@@ -41,7 +39,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
     final repository = ref.read(repositoryProvider.notifier);
     repository.deleteExpense(expense);
 
-    if (mounted){
+    if (mounted) {
       showSnackBar(context, '${expense.name} deleted', 'Undo', () {
         repository.insertExpense(expense);
       });
@@ -54,13 +52,13 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
       return Scaffold(
         appBar: AppBar(title: const Text('Splitly')),
         body: StreamBuilder(
-          stream: expenseStream,
+            stream: expenseStream,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const CircularProgressIndicator();
               } else if (snapshot.hasError) {
                 return const Text('Error loading expenses');
-              } else if (!snapshot.hasData || snapshot.data!.isEmpty){
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                 return const Text('No expenses available');
               } else {
                 return ListView.builder(
@@ -78,18 +76,6 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
         body: Center(child: Text('No friend selected!')),
       );
     }
-  }
-
-  Future<ListView> _buildExpensesList() async {
-    ref.watch(repositoryProvider);
-    final expenses = await FriendUtils.getSelectedFriendExpenses(ref);
-    return ListView.builder(
-      itemCount: expenses.length,
-      itemBuilder: (context, index) {
-        int reverseIndex = expenses.length - index - 1;
-        return _buildExpenseItem(expenses[reverseIndex]);
-      },
-    );
   }
 
   Dismissible _buildExpenseItem(Expense expense) {
@@ -198,19 +184,27 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
           _buildExpenseDetailsTitle(expense),
           const SizedBox(height: 10.0),
           Text('Cost: ${expense.totalCost}\$',
-              style: Theme.of(context).textTheme.titleSmall),
+              style: Theme
+                  .of(context)
+                  .textTheme
+                  .titleSmall),
           const SizedBox(height: 10.0),
           Text('Paid by: ${expense.payer}',
-              style: Theme.of(context).textTheme.titleSmall),
+              style: Theme
+                  .of(context)
+                  .textTheme
+                  .titleSmall),
           const SizedBox(height: 4.0),
           Text('Your consumption: ${expense.shouldBePaidByUser}',
-              style: Theme.of(context)
+              style: Theme
+                  .of(context)
                   .textTheme
                   .titleSmall
                   ?.copyWith(color: Colors.grey)),
           Text('You paid: ${expense.paidByUser}'),
           Text('Their consumption: ${expense.shouldBePaidByFriend}',
-              style: Theme.of(context)
+              style: Theme
+                  .of(context)
                   .textTheme
                   .titleSmall
                   ?.copyWith(color: Colors.grey)),
@@ -248,7 +242,10 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
           },
           icon: Icon(
             Icons.edit,
-            color: Theme.of(context).iconTheme.color,
+            color: Theme
+                .of(context)
+                .iconTheme
+                .color,
           ),
         ),
       ],
@@ -261,9 +258,13 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
         const SizedBox(height: 10.0),
         Text(
           'Description: ${expense.description}',
-          style: Theme.of(context)
+          style: Theme
+              .of(context)
               .textTheme
-              .apply(displayColor: Theme.of(context).colorScheme.onSurface)
+              .apply(displayColor: Theme
+              .of(context)
+              .colorScheme
+              .onSurface)
               .bodySmall,
         ),
       ];
