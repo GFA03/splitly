@@ -117,7 +117,10 @@ class _BalancePageState extends ConsumerState<BalancePage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        _buildProfileCard(profile: FriendProfile(name: 'You', profilePicture: myProfilePicture), changePicture: _changeMyProfilePicture),
+        _buildProfileCard(
+            profile:
+                FriendProfile(name: 'You', profilePicture: myProfilePicture),
+            changePicture: _changeMyProfilePicture),
         // TODO: add currency option (and you should call an API to convert the selected currency to the settings selected currency
         Text(
           'Balance: ${balance.toStringAsFixed(2)}\$',
@@ -126,7 +129,9 @@ class _BalancePageState extends ConsumerState<BalancePage> {
             color: balanceColor,
           ),
         ),
-        _buildProfileCard(profile: selectedFriend, changePicture: _changeSelectedFriendPicture),
+        _buildProfileCard(
+            profile: selectedFriend,
+            changePicture: _changeSelectedFriendPicture),
       ],
     );
   }
@@ -139,7 +144,9 @@ class _BalancePageState extends ConsumerState<BalancePage> {
     return _buildHistoryCard(ref, friendExpenses);
   }
 
-  Card _buildProfileCard({required FriendProfile profile, required Future Function(File selectedImage) changePicture}) {
+  Card _buildProfileCard(
+      {required FriendProfile profile,
+      required Future Function(File selectedImage) changePicture}) {
     final textTheme = Theme.of(context)
         .textTheme
         .apply(displayColor: Theme.of(context).colorScheme.onSurface);
@@ -176,7 +183,8 @@ class _BalancePageState extends ConsumerState<BalancePage> {
     );
   }
 
-  void showImagePickerOptions(BuildContext context, Future Function(File selectedImage) changePicture) {
+  void showImagePickerOptions(
+      BuildContext context, Future Function(File selectedImage) changePicture) {
     showModalBottomSheet(
         backgroundColor: Colors.blue[100],
         context: context,
@@ -188,44 +196,10 @@ class _BalancePageState extends ConsumerState<BalancePage> {
               height: MediaQuery.of(context).size.height / 4.5,
               child: Row(
                 children: [
-                  Expanded(
-                    child: InkWell(
-                      onTap: () {
-                        _changePictureFromGallery(changePicture);
-                        Navigator.of(context).pop();
-                      },
-                      child: const SizedBox(
-                        child: Column(
-                          children: [
-                            Icon(
-                              Icons.image,
-                              size: 70,
-                            ),
-                            Text("Gallery")
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: InkWell(
-                      onTap: () {
-                        _changePictureFromCamera(changePicture);
-                        Navigator.of(context).pop();
-                      },
-                      child: const SizedBox(
-                        child: Column(
-                          children: [
-                            Icon(
-                              Icons.camera_alt,
-                              size: 70,
-                            ),
-                            Text("Camera")
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+                  _buildImagePickerOption(context, Icons.image, 'Gallery',
+                      () => _pickImage(ImageSource.gallery, changePicture)),
+                  _buildImagePickerOption(context, Icons.camera_alt, 'Camera',
+                      () => _pickImage(ImageSource.camera, changePicture)),
                 ],
               ),
             ),
@@ -233,36 +207,37 @@ class _BalancePageState extends ConsumerState<BalancePage> {
         });
   }
 
-  Future _changePictureFromGallery(Future Function(File selectedImage) changePicture) async {
-    final File? selectedImage = await _pickImageFromGallery();
-    if (selectedImage == null) {
-      return;
+  Expanded _buildImagePickerOption(
+      BuildContext context, IconData icon, String label, Function onTap) {
+    return Expanded(
+      child: InkWell(
+        onTap: () {
+          onTap();
+          Navigator.of(context).pop();
+        },
+        child: Column(
+          children: [
+            Icon(icon, size: 70),
+            Text(label),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future _pickImage(ImageSource source,
+      Future Function(File selectedImage) changePicture) async {
+    final image = await ImagePicker().pickImage(source: source);
+    if (image != null) {
+      final File selectedImage = File(image.path);
+      changePicture(selectedImage);
     }
-    changePicture(selectedImage);
-  }
-
-//Gallery
-  Future<File?> _pickImageFromGallery() async {
-    final image = await ImagePicker().pickImage(source: ImageSource.gallery);
-    return image == null ? null : File(image.path);
-  }
-
-  Future _changePictureFromCamera(Future Function(File selectedImage) changePicture) async {
-    final File? selectedImage = await _pickImageFromCamera();
-    if (selectedImage == null) {
-      return;
-    }
-    changePicture(selectedImage);
-  }
-
-//Camera
-  Future _pickImageFromCamera() async {
-    final image = await ImagePicker().pickImage(source: ImageSource.camera);
-    return image == null ? null : File(image.path);
   }
 
   Future _changeMyProfilePicture(File selectedImage) async {
-    await ref.read(profilePictureProvider.notifier).changeProfilePicture(selectedImage, ref);
+    await ref
+        .read(profilePictureProvider.notifier)
+        .changeProfilePicture(selectedImage, ref);
   }
 
   Future _changeSelectedFriendPicture(File selectedImage) async {
@@ -271,14 +246,17 @@ class _BalancePageState extends ConsumerState<BalancePage> {
     String imageName = pathSegments.last;
     final File newImage = await selectedImage.copy('${dir.path}/$imageName');
     final profile = ref.watch(selectedFriendProvider);
-    ref.read(repositoryProvider.notifier).editFriendPicture(profile!, newImage.path);
+    ref
+        .read(repositoryProvider.notifier)
+        .editFriendPicture(profile!, newImage.path);
     //todo: maybe look over this spaghetti selected friend provider
-    final updatedFriend = await ref.read(repositoryProvider.notifier).findFriendById(profile.id);
+    final updatedFriend =
+        await ref.read(repositoryProvider.notifier).findFriendById(profile.id);
     ref.read(selectedFriendProvider.notifier).setSelectedFriend(updatedFriend!);
   }
 
   Widget _buildNoExpensesCard() {
-    return const Text('There are no expenses yet!');
+    return const Center(child: Text('There are no expenses yet!'));
   }
 
   Widget _buildHistoryCard(WidgetRef ref, List<Expense> friendExpenses) {
