@@ -66,6 +66,7 @@ class _BalancePageState extends ConsumerState<BalancePage> {
   }
 
   Card _buildBalanceCard() {
+    ref.watch(repositoryProvider);
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
