@@ -13,6 +13,13 @@ import 'package:splitly/utils/friend_utils.dart';
 
 import '../history/history_page.dart';
 
+class BalanceAndExpenses {
+  BalanceAndExpenses(this.balance, this.expenses);
+
+  double balance;
+  List<Expense> expenses;
+}
+
 class BalancePage extends ConsumerStatefulWidget {
   const BalancePage({
     super.key,
@@ -26,12 +33,27 @@ class BalancePage extends ConsumerStatefulWidget {
 }
 
 class _BalancePageState extends ConsumerState<BalancePage> {
+  Stream<BalanceAndExpenses>? expenseAndBalanceStream;
+
+  // Stream to watch both balance and expenses together
+  Stream<BalanceAndExpenses> _watchBalanceAndExpenses(String friendId) async* {
+    final repository = ref.read(repositoryProvider.notifier);
+
+    // Combine both streams into one
+    yield* repository.watchFriendExpenses(friendId).asyncMap((expenses) async {
+      final balance = await repository.calculateFriendBalance(friendId);
+      return BalanceAndExpenses(balance, expenses);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    ref.watch(repositoryProvider);
     final selectedFriend = ref.watch(selectedFriendProvider);
     if (selectedFriend == null) {
       return _buildNoFriendSelected();
     }
+    expenseAndBalanceStream = _watchBalanceAndExpenses(selectedFriend.id);
     return _buildFriendBalance(context);
   }
 
@@ -66,53 +88,47 @@ class _BalancePageState extends ConsumerState<BalancePage> {
   }
 
   Card _buildBalanceCard() {
-    ref.watch(repositoryProvider);
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            FutureBuilder<Row>(
-              future: _buildProfileRow(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const CircularProgressIndicator();
-                } else if (snapshot.hasError) {
-                  return const Text('Error loading balance');
-                } else {
-                  return snapshot.data ?? const SizedBox.shrink();
-                }
-              },
-            ),
-            const SizedBox(height: 20.0),
-            FutureBuilder<Widget>(
-              future: _buildExpenseDetails(ref),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const CircularProgressIndicator();
-                } else if (snapshot.hasError) {
-                  return const Text('Error loading expenses');
-                } else {
-                  return snapshot.data ?? const SizedBox.shrink();
-                }
-              },
-            )
-          ],
-        ),
+        child: expenseAndBalanceStream == null
+            ? Column(
+                children: [
+                  _buildProfileRow(0.0),
+                  const SizedBox(height: 20.0),
+                  _buildExpenseDetails([]),
+                ],
+              )
+            : StreamBuilder(
+                stream: expenseAndBalanceStream,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const CircularProgressIndicator();
+                  } else if (snapshot.hasError) {
+                    return const Text('Error loading balance');
+                  } else if (!snapshot.hasData || snapshot.data == null) {
+                    print('NO DATA FOUND!!!');
+                    return const Text('No data available');
+                  } else {
+                    final data = snapshot.data!;
+                    return Column(
+                      children: [
+                        _buildProfileRow(data.balance),
+                        const SizedBox(height: 20.0),
+                        _buildExpenseDetails(data.expenses),
+                      ],
+                    );
+                  }
+                }),
       ),
     );
   }
 
-  Future<Row> _buildProfileRow() async {
-    final selectedFriend = FriendUtils.getSelectedFriend(ref);
-    if (selectedFriend == null) {
-      throw Exception('No friend selected!');
-    }
-    final balance = await selectedFriend
-        .calculateBalance(ref.read(repositoryProvider.notifier));
+  Row _buildProfileRow(double balance) {
     final balanceColor = balance >= 0 ? Colors.green : Colors.red;
 
     final myProfilePicture = ref.watch(profilePictureProvider);
+    final selectedFriend = FriendUtils.getSelectedFriend(ref);
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -130,18 +146,17 @@ class _BalancePageState extends ConsumerState<BalancePage> {
           ),
         ),
         _buildProfileCard(
-            profile: selectedFriend,
+            profile: selectedFriend!,
             changePicture: _changeSelectedFriendPicture),
       ],
     );
   }
 
-  Future<Widget> _buildExpenseDetails(WidgetRef ref) async {
-    final friendExpenses = await FriendUtils.getSelectedFriendExpenses(ref);
-    if (friendExpenses.isEmpty) {
+  Widget _buildExpenseDetails(List<Expense> expenses) {
+    if (expenses.isEmpty) {
       return _buildNoExpensesCard();
     }
-    return _buildHistoryCard(ref, friendExpenses);
+    return _buildHistoryCard(ref, expenses);
   }
 
   Card _buildProfileCard(

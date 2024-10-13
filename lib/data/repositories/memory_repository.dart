@@ -34,8 +34,7 @@ class MemoryRepository extends Notifier<CurrentFriendData>
 
   @override
   CurrentFriendData build() {
-    const currentFriendData =
-        CurrentFriendData();
+    const currentFriendData = CurrentFriendData();
     return currentFriendData;
   }
 
@@ -52,10 +51,17 @@ class MemoryRepository extends Notifier<CurrentFriendData>
   @override
   Stream<List<Expense>> watchFriendExpenses(String friendId) {
     return _expenseStream.map((expenses) =>
-        expenses.where((expense) => expense.friendId == friendId).toList()
-    );
+        expenses.where((expense) => expense.friendId == friendId).toList());
   }
 
+  @override
+  Future<double> calculateFriendBalance(String friendId) {
+    final expenses = state.currentExpenses
+        .where((expense) => expense.friendId == friendId)
+        .toList();
+    return Future.value(
+        expenses.fold<double>(0, (prev, el) => prev + el.balance));
+  }
 
   @override
   Future<List<FriendProfile>> findAllFriends() {
@@ -105,7 +111,8 @@ class MemoryRepository extends Notifier<CurrentFriendData>
   Future<void> editFriendName(FriendProfile friend, String newName) {
     final updatedFriends = state.currentFriends.map((f) {
       if (f.id == friend.id) {
-        return FriendProfile(id: f.id, name: newName, profilePicture: f.profilePicture);
+        return FriendProfile(
+            id: f.id, name: newName, profilePicture: f.profilePicture);
       }
       return f;
     }).toList();
@@ -119,7 +126,8 @@ class MemoryRepository extends Notifier<CurrentFriendData>
   Future<void> editFriendPicture(FriendProfile friend, String newPicture) {
     final updatedFriends = state.currentFriends.map((f) {
       if (f.id == friend.id) {
-        return FriendProfile(id: f.id, name: f.name, profilePicture: newPicture);
+        return FriendProfile(
+            id: f.id, name: f.name, profilePicture: newPicture);
       }
       return f;
     }).toList();
@@ -147,8 +155,7 @@ class MemoryRepository extends Notifier<CurrentFriendData>
   Future<void> deleteFriend(FriendProfile friend) {
     final updatedFriends =
         state.currentFriends.where((f) => f.id != friend.id).toList();
-    state = state.copyWith(
-        currentFriends: updatedFriends);
+    state = state.copyWith(currentFriends: updatedFriends);
     _friendStreamController.sink.add(state.currentFriends);
     return Future.value();
   }

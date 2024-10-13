@@ -7,6 +7,8 @@ abstract class Repository {
 
   Stream<List<Expense>> watchFriendExpenses(String friendId);
 
+  Future<double> calculateFriendBalance(String friendId);
+
   Future<List<FriendProfile>> findAllFriends();
 
   Future<Expense> findExpenseById(String id);
