@@ -341,6 +341,8 @@ class _ExpenseFormPageState extends ConsumerState<ExpenseFormPage> {
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
+              color: Colors.blue,
+              decoration: TextDecoration.underline,
             ),
           ),
         ),
