@@ -31,7 +31,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
         title: 'Splitly',
-        debugShowCheckedModeBanner: false,
+        debugShowCheckedModeBanner: true,
         themeMode: currentMode,
         theme: ThemeData(
           useMaterial3: true,

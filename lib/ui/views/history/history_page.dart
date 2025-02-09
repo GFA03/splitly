@@ -4,36 +4,20 @@ import 'package:splitly/providers.dart';
 import 'package:splitly/ui/views/expenseForm/expense_form_page.dart';
 import 'package:splitly/data/models/expense.dart';
 import 'package:splitly/utils.dart';
-import 'package:splitly/utils/friend_utils.dart';
 
 class HistoryPage extends ConsumerStatefulWidget {
   const HistoryPage({
     super.key,
+    required this.expenses
   });
+
+  final List<Expense> expenses;
 
   @override
   ConsumerState createState() => _HistoryPageState();
 }
 
 class _HistoryPageState extends ConsumerState<HistoryPage> {
-  late Stream<List<Expense>> expenseStream;
-  late String selectedFriendId;
-
-  @override
-  void initState() {
-    super.initState();
-
-    final selectedFriend = FriendUtils.getSelectedFriend(ref);
-    if (selectedFriend == null) {
-      throw Exception('No friend selected!');
-    }
-
-    selectedFriendId = selectedFriend.id;
-
-    final repository = ref.read(repositoryProvider.notifier);
-    expenseStream = repository.watchFriendExpenses(selectedFriendId);
-  }
-
   void deleteExpense(Expense expense) async {
     //todo: save index of deleted expense
     final repository = ref.read(repositoryProvider.notifier);
@@ -48,34 +32,17 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
 
   @override
   Widget build(BuildContext context) {
-    try {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Splitly')),
-        body: StreamBuilder(
-            stream: expenseStream,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const CircularProgressIndicator();
-              } else if (snapshot.hasError) {
-                return const Text('Error loading expenses');
-              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return const Text('No expenses available');
-              } else {
-                return ListView.builder(
-                  itemCount: snapshot.data!.length,
-                  itemBuilder: (context, index) {
-                    int reverseIndex = snapshot.data!.length - index - 1;
-                    return _buildExpenseItem(snapshot.data![reverseIndex]);
-                  },
-                );
-              }
-            }),
-      );
-    } catch (e) {
-      return const Scaffold(
-        body: Center(child: Text('No friend selected!')),
-      );
-    }
+    return Scaffold(
+      appBar: AppBar(title: const Text('Splitly')),
+      body: ListView.builder(
+          padding: EdgeInsets.all(8),
+          itemCount: widget.expenses.length,
+          itemBuilder: (context, index) {
+            int reverseIndex = widget.expenses.length - index - 1;
+            return _buildExpenseItem(widget.expenses[reverseIndex]);
+          }
+      )
+    );
   }
 
   Dismissible _buildExpenseItem(Expense expense) {
@@ -184,27 +151,19 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
           _buildExpenseDetailsTitle(expense),
           const SizedBox(height: 10.0),
           Text('Cost: ${expense.totalCost}\$',
-              style: Theme
-                  .of(context)
-                  .textTheme
-                  .titleSmall),
+              style: Theme.of(context).textTheme.titleSmall),
           const SizedBox(height: 10.0),
           Text('Paid by: ${expense.payer}',
-              style: Theme
-                  .of(context)
-                  .textTheme
-                  .titleSmall),
+              style: Theme.of(context).textTheme.titleSmall),
           const SizedBox(height: 4.0),
           Text('Your consumption: ${expense.shouldBePaidByUser}',
-              style: Theme
-                  .of(context)
+              style: Theme.of(context)
                   .textTheme
                   .titleSmall
                   ?.copyWith(color: Colors.grey)),
           Text('You paid: ${expense.paidByUser}'),
           Text('Their consumption: ${expense.shouldBePaidByFriend}',
-              style: Theme
-                  .of(context)
+              style: Theme.of(context)
                   .textTheme
                   .titleSmall
                   ?.copyWith(color: Colors.grey)),
@@ -242,10 +201,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
           },
           icon: Icon(
             Icons.edit,
-            color: Theme
-                .of(context)
-                .iconTheme
-                .color,
+            color: Theme.of(context).iconTheme.color,
           ),
         ),
       ],
@@ -258,13 +214,9 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
         const SizedBox(height: 10.0),
         Text(
           'Description: ${expense.description}',
-          style: Theme
-              .of(context)
+          style: Theme.of(context)
               .textTheme
-              .apply(displayColor: Theme
-              .of(context)
-              .colorScheme
-              .onSurface)
+              .apply(displayColor: Theme.of(context).colorScheme.onSurface)
               .bodySmall,
         ),
       ];

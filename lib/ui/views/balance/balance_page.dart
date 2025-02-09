@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
@@ -12,13 +11,6 @@ import 'package:splitly/ui/views/expenseForm/expense_form_page.dart';
 import 'package:splitly/utils/friend_utils.dart';
 
 import '../history/history_page.dart';
-
-class BalanceAndExpenses {
-  BalanceAndExpenses(this.balance, this.expenses);
-
-  double balance;
-  List<Expense> expenses;
-}
 
 class BalancePage extends ConsumerStatefulWidget {
   const BalancePage({
@@ -33,27 +25,17 @@ class BalancePage extends ConsumerStatefulWidget {
 }
 
 class _BalancePageState extends ConsumerState<BalancePage> {
-  Stream<BalanceAndExpenses>? expenseAndBalanceStream;
-
-  // Stream to watch both balance and expenses together
-  Stream<BalanceAndExpenses> _watchBalanceAndExpenses(String friendId) async* {
-    final repository = ref.read(repositoryProvider.notifier);
-
-    // Combine both streams into one
-    yield* repository.watchFriendExpenses(friendId).asyncMap((expenses) async {
-      final balance = await repository.calculateFriendBalance(friendId);
-      return BalanceAndExpenses(balance, expenses);
-    });
-  }
+  late Stream<List<Expense>> expenseStream;
 
   @override
   Widget build(BuildContext context) {
     ref.watch(repositoryProvider);
+    final repository = ref.read(repositoryProvider.notifier);
     final selectedFriend = ref.watch(selectedFriendProvider);
     if (selectedFriend == null) {
       return _buildNoFriendSelected();
     }
-    expenseAndBalanceStream = _watchBalanceAndExpenses(selectedFriend.id);
+    expenseStream = repository.watchFriendExpenses(selectedFriend.id);
     return _buildFriendBalance(context);
   }
 
@@ -91,35 +73,27 @@ class _BalancePageState extends ConsumerState<BalancePage> {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: expenseAndBalanceStream == null
-            ? Column(
-                children: [
-                  _buildProfileRow(0.0),
-                  const SizedBox(height: 20.0),
-                  _buildExpenseDetails([]),
-                ],
-              )
-            : StreamBuilder(
-                stream: expenseAndBalanceStream,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const CircularProgressIndicator();
-                  } else if (snapshot.hasError) {
-                    return const Text('Error loading balance');
-                  } else if (!snapshot.hasData || snapshot.data == null) {
-                    print('NO DATA FOUND!!!');
-                    return const Text('No data available');
-                  } else {
-                    final data = snapshot.data!;
-                    return Column(
-                      children: [
-                        _buildProfileRow(data.balance),
-                        const SizedBox(height: 20.0),
-                        _buildExpenseDetails(data.expenses),
-                      ],
-                    );
-                  }
-                }),
+        child: StreamBuilder(
+            stream: expenseStream,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator(),);
+              } else if (snapshot.hasError) {
+                return const Text('Error loading balance');
+              } else if (!snapshot.hasData || snapshot.data == null) {
+                return const Text('No data available');
+              } else {
+                final data = snapshot.data!;
+                final double balance = data.fold(0, (totalBalance, expense) => totalBalance + expense.balance);
+                return Column(
+                  children: [
+                    _buildProfileRow(balance),
+                    const SizedBox(height: 20.0),
+                    _buildExpenseDetails(data),
+                  ],
+                );
+              }
+            }),
       ),
     );
   }
@@ -175,9 +149,9 @@ class _BalancePageState extends ConsumerState<BalancePage> {
             height: 10,
           ),
           CircleAvatar(
-            backgroundImage: profile.profilePicture == null
-                ? const AssetImage(FriendUtils.defaultProfileImage)
-                : FileImage(File(profile.profilePicture!)),
+            backgroundImage: profile.profilePicture.contains('assets')
+                ? AssetImage(profile.profilePicture)
+                : FileImage(File(profile.profilePicture)),
             radius: 40,
           ),
           const SizedBox(
@@ -291,7 +265,7 @@ class _BalancePageState extends ConsumerState<BalancePage> {
               Navigator.push<bool>(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const HistoryPage(),
+                  builder: (context) => HistoryPage(expenses: friendExpenses),
                 ),
               );
             },

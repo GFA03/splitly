@@ -164,7 +164,9 @@ class _FriendsPageState extends ConsumerState<FriendsPage> {
     return Row(
       children: [
         CircleAvatar(
-            backgroundImage: friend.profilePicture == null ? const AssetImage(FriendUtils.defaultProfileImage) : FileImage(File(friend.profilePicture!)),
+            backgroundImage: friend.profilePicture.contains('assets')
+                ? AssetImage(friend.profilePicture)
+                : FileImage(File(friend.profilePicture)),
             radius: 25),
         const SizedBox(width: 15.0),
         Text(friend.name),
